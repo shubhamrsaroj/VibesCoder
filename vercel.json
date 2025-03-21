@@ -1,0 +1,31 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "client/package.json",
+        "use": "@vercel/static-build",
+        "config": { 
+          "distDir": "client/build",
+          "buildCommand": "cd client && npm install && npm run build"
+        }
+      }
+    ],
+    "routes": [
+      {
+        "src": "/static/(.*)",
+        "dest": "/client/static/$1"
+      },
+      {
+        "src": "/favicon.ico",
+        "dest": "/client/favicon.ico"
+      },
+      {
+        "src": "/manifest.json",
+        "dest": "/client/manifest.json"
+      },
+      {
+        "src": "/(.*)",
+        "dest": "/client/index.html"
+      }
+    ]
+  }
