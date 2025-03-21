@@ -6,7 +6,7 @@
         "use": "@vercel/static-build",
         "config": {
           "distDir": "build",
-          "buildCommand": "cd client && CI=false npm install --legacy-peer-deps && CI=false DISABLE_ESLINT_PLUGIN=true npm run build"
+          "buildCommand": "cd client && DISABLE_ESLINT_PLUGIN=true SKIP_PREFLIGHT_CHECK=true CI=false npm install --no-audit --no-fund --legacy-peer-deps && npm run build"
         }
       }
     ],
@@ -37,6 +37,8 @@
     ],
     "env": {
       "CI": "false",
-      "DISABLE_ESLINT_PLUGIN": "true"
+      "DISABLE_ESLINT_PLUGIN": "true",
+      "SKIP_PREFLIGHT_CHECK": "true",
+      "NPM_FLAGS": "--no-audit --no-fund --legacy-peer-deps"
     }
   } 
