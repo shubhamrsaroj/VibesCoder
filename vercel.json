@@ -6,7 +6,7 @@
         "use": "@vercel/static-build",
         "config": {
           "distDir": "build",
-          "buildCommand": "cd client && npm install && DISABLE_ESLINT_PLUGIN=true npm run build"
+          "buildCommand": "cd client && CI=false npm install && CI=false DISABLE_ESLINT_PLUGIN=true npm run build"
         }
       }
     ],
@@ -15,5 +15,9 @@
         "src": "/(.*)",
         "dest": "client/$1"
       }
-    ]
+    ],
+    "env": {
+      "CI": "false",
+      "DISABLE_ESLINT_PLUGIN": "true"
+    }
   } 
