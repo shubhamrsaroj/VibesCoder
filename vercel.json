@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd client && DISABLE_ESLINT_PLUGIN=true CI=false npm install --legacy-peer-deps && npm run build",
+  "buildCommand": "cd client && DISABLE_ESLINT_PLUGIN=true CI=false npm install --legacy-peer-deps && CI=false npm run build",
   "outputDirectory": "client/build",
   "framework": "create-react-app",
   "builds": [
@@ -9,7 +9,7 @@
       "use": "@vercel/static-build",
       "config": {
         "distDir": "build",
-        "buildCommand": "cd client && DISABLE_ESLINT_PLUGIN=true CI=false npm install --legacy-peer-deps && npm run build"
+        "buildCommand": "cd client && DISABLE_ESLINT_PLUGIN=true CI=false npm install --legacy-peer-deps && CI=false npm run build"
       }
     }
   ],
