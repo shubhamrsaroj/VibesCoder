@@ -6,14 +6,33 @@
         "use": "@vercel/static-build",
         "config": {
           "distDir": "build",
-          "buildCommand": "cd client && CI=false npm install && CI=false DISABLE_ESLINT_PLUGIN=true npm run build"
+          "buildCommand": "cd client && CI=false npm install --legacy-peer-deps && CI=false DISABLE_ESLINT_PLUGIN=true npm run build"
         }
       }
     ],
     "routes": [
       {
+        "handle": "filesystem"
+      },
+      {
+        "src": "/static/(.*)",
+        "dest": "/client/static/$1"
+      },
+      {
+        "src": "/assets/(.*)",
+        "dest": "/client/assets/$1"
+      },
+      {
+        "src": "/favicon.ico",
+        "dest": "/client/favicon.ico"
+      },
+      {
+        "src": "/manifest.json",
+        "dest": "/client/manifest.json"
+      },
+      {
         "src": "/(.*)",
-        "dest": "client/$1"
+        "dest": "/client/index.html"
       }
     ],
     "env": {
