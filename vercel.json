@@ -46,13 +46,6 @@
     "CI": "false",
     "DISABLE_ESLINT_PLUGIN": "true",
     "SKIP_PREFLIGHT_CHECK": "true",
-    "NODE_ENV": "production",
-   
-    "MONGODB_URI": "@mongodb_uri",  
-    "JWT_SECRET": "@jwt_secret",    
-    "SPOTIFY_CLIENT_ID": "@spotify_client_id", 
-    "SPOTIFY_CLIENT_SECRET": "@spotify_client_secret", 
-    "GEMINI_API_KEY": "@gemini_api_key",  
-    "CLAUDE_API_KEY": "@claude_api_key"  
+    "NODE_ENV": "production"
   }
 }
