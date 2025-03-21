@@ -2,11 +2,14 @@ const express = require('express');
 const router = express.Router();
 const Project = require('../models/Project');
 const auth = require('../middleware/auth');
+const projectAuth = require('../middleware/projectAuth');
+const fileAuth = require('../middleware/fileAuth');
 
 // Get all projects for current user
 router.get('/', auth, async (req, res) => {
   try {
-    const projects = await Project.find({
+    // Find user's own projects (both private and public)
+    const userProjects = await Project.find({
       $or: [
         { owner: req.user.id },
         { collaborators: req.user.id }
@@ -15,8 +18,8 @@ router.get('/', auth, async (req, res) => {
     
     res.json({
       success: true,
-      count: projects.length,
-      data: projects
+      count: userProjects.length,
+      data: userProjects
     });
   } catch (error) {
     console.error(error);
@@ -29,29 +32,11 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Get single project
-router.get('/:id', auth, async (req, res) => {
-  try {
-    const project = await Project.findById(req.params.id);
-    
-    if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found'
-      });
-    }
-    
-    // Check if user is owner or collaborator
-    if (project.owner.toString() !== req.user.id && 
-        !project.collaborators.includes(req.user.id)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to access this project'
-      });
-    }
-    
+router.get('/:id', auth, projectAuth, async (req, res) => {
+  try {    
     res.json({
       success: true,
-      data: project
+      data: req.project
     });
   } catch (error) {
     console.error(error);
@@ -66,12 +51,13 @@ router.get('/:id', auth, async (req, res) => {
 // Create new project
 router.post('/', auth, async (req, res) => {
   try {
-    const { name, description, type } = req.body;
+    const { name, description, type, isPrivate } = req.body;
     
     const project = new Project({
       name,
       description,
       type,
+      isPrivate: isPrivate !== undefined ? isPrivate : true, // Private by default
       owner: req.user.id
     });
     
@@ -92,34 +78,18 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Update project
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, projectAuth, async (req, res) => {
   try {
-    let project = await Project.findById(req.params.id);
+    const { name, description, type, progress, isPrivate } = req.body;
     
-    if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found'
-      });
-    }
-    
-    // Check if user is owner
-    if (project.owner.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to update this project'
-      });
-    }
-    
-    const { name, description, type, progress } = req.body;
-    
-    project = await Project.findByIdAndUpdate(
+    const project = await Project.findByIdAndUpdate(
       req.params.id,
       { 
         name, 
         description, 
         type, 
         progress,
+        isPrivate,
         lastModified: Date.now()
       },
       { new: true, runValidators: true }
@@ -140,26 +110,9 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // Delete project
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, projectAuth, async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id);
-    
-    if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found'
-      });
-    }
-    
-    // Check if user is owner
-    if (project.owner.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to delete this project'
-      });
-    }
-    
-    await project.remove();
+    await req.project.remove();
     
     res.json({
       success: true,
@@ -176,41 +129,23 @@ router.delete('/:id', auth, async (req, res) => {
 });
 
 // Add code file to project
-router.post('/:id/code', auth, async (req, res) => {
+router.post('/:id/code', auth, projectAuth, async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id);
-    
-    if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found'
-      });
-    }
-    
-    // Check if user is owner or collaborator
-    if (project.owner.toString() !== req.user.id && 
-        !project.collaborators.includes(req.user.id)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to modify this project'
-      });
-    }
-    
     const { name, content, language } = req.body;
     
-    project.codeFiles.push({
+    req.project.codeFiles.push({
       name,
       content,
       language,
       lastModified: Date.now()
     });
     
-    project.lastModified = Date.now();
-    await project.save();
+    req.project.lastModified = Date.now();
+    await req.project.save();
     
     res.status(201).json({
       success: true,
-      data: project
+      data: req.project
     });
   } catch (error) {
     console.error(error);
@@ -223,40 +158,22 @@ router.post('/:id/code', auth, async (req, res) => {
 });
 
 // Add drawing to project
-router.post('/:id/drawing', auth, async (req, res) => {
+router.post('/:id/drawing', auth, projectAuth, async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id);
-    
-    if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found'
-      });
-    }
-    
-    // Check if user is owner or collaborator
-    if (project.owner.toString() !== req.user.id && 
-        !project.collaborators.includes(req.user.id)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to modify this project'
-      });
-    }
-    
     const { name, content } = req.body;
     
-    project.drawings.push({
+    req.project.drawings.push({
       name,
       content,
       lastModified: Date.now()
     });
     
-    project.lastModified = Date.now();
-    await project.save();
+    req.project.lastModified = Date.now();
+    await req.project.save();
     
     res.status(201).json({
       success: true,
-      data: project
+      data: req.project
     });
   } catch (error) {
     console.error(error);
@@ -269,55 +186,22 @@ router.post('/:id/drawing', auth, async (req, res) => {
 });
 
 // Update code file in project
-router.put('/:id/code/:fileId', auth, async (req, res) => {
+router.put('/:projectId/code/:fileId', auth, fileAuth, async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id);
-    
-    if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found'
-      });
-    }
-    
-    // Check if user is owner or collaborator
-    if (project.owner.toString() !== req.user.id && 
-        !project.collaborators.includes(req.user.id)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to modify this project'
-      });
-    }
-    
     const { name, content, language } = req.body;
     
-    // Find the file by id
-    const fileIndex = project.codeFiles.findIndex(file => 
-      file._id.toString() === req.params.fileId
-    );
-    
-    if (fileIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        message: 'Code file not found'
-      });
-    }
-    
     // Update the file
-    project.codeFiles[fileIndex] = {
-      ...project.codeFiles[fileIndex],
-      name: name || project.codeFiles[fileIndex].name,
-      content: content || project.codeFiles[fileIndex].content,
-      language: language || project.codeFiles[fileIndex].language,
-      lastModified: Date.now()
-    };
+    req.file.name = name || req.file.name;
+    req.file.content = content || req.file.content;
+    req.file.language = language || req.file.language;
+    req.file.lastModified = Date.now();
     
-    project.lastModified = Date.now();
-    await project.save();
+    req.project.lastModified = Date.now();
+    await req.project.save();
     
     res.json({
       success: true,
-      data: project
+      data: req.project
     });
   } catch (error) {
     console.error(error);
@@ -330,54 +214,99 @@ router.put('/:id/code/:fileId', auth, async (req, res) => {
 });
 
 // Update drawing in project
-router.put('/:id/drawing/:drawingId', auth, async (req, res) => {
+router.put('/:projectId/drawing/:fileId', auth, fileAuth, async (req, res) => {
+  try {
+    const { name, content } = req.body;
+    
+    // Update the drawing
+    req.file.name = name || req.file.name;
+    req.file.content = content || req.file.content;
+    req.file.lastModified = Date.now();
+    
+    req.project.lastModified = Date.now();
+    await req.project.save();
+    
+    res.json({
+      success: true,
+      data: req.project
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error', 
+      error: error.message 
+    });
+  }
+});
+
+// Delete code file from project
+router.delete('/:projectId/code/:fileId', auth, fileAuth, async (req, res) => {
+  try {
+    req.project.codeFiles.id(req.params.fileId).remove();
+    req.project.lastModified = Date.now();
+    
+    await req.project.save();
+    
+    res.json({
+      success: true,
+      data: req.project
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error', 
+      error: error.message 
+    });
+  }
+});
+
+// Delete drawing from project
+router.delete('/:projectId/drawing/:fileId', auth, fileAuth, async (req, res) => {
+  try {
+    req.project.drawings.id(req.params.fileId).remove();
+    req.project.lastModified = Date.now();
+    
+    await req.project.save();
+    
+    res.json({
+      success: true,
+      data: req.project
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error', 
+      error: error.message 
+    });
+  }
+});
+
+// Check if user has access to project
+router.get('/:id/access', auth, async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
     
     if (!project) {
-      return res.status(404).json({
-        success: false,
+      return res.json({
+        success: true,
+        hasAccess: false,
         message: 'Project not found'
       });
     }
     
     // Check if user is owner or collaborator
-    if (project.owner.toString() !== req.user.id && 
-        !project.collaborators.includes(req.user.id)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to modify this project'
-      });
-    }
-    
-    const { name, content } = req.body;
-    
-    // Find the drawing by id
-    const drawingIndex = project.drawings.findIndex(drawing => 
-      drawing._id.toString() === req.params.drawingId
-    );
-    
-    if (drawingIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        message: 'Drawing not found'
-      });
-    }
-    
-    // Update the drawing
-    project.drawings[drawingIndex] = {
-      ...project.drawings[drawingIndex],
-      name: name || project.drawings[drawingIndex].name,
-      content: content || project.drawings[drawingIndex].content,
-      lastModified: Date.now()
-    };
-    
-    project.lastModified = Date.now();
-    await project.save();
+    const hasAccess = 
+      project.owner.toString() === req.user.id || 
+      project.collaborators.includes(req.user.id) || 
+      (!project.isPrivate); // Public projects are accessible to everyone
     
     res.json({
       success: true,
-      data: project
+      hasAccess,
+      isOwner: project.owner.toString() === req.user.id
     });
   } catch (error) {
     console.error(error);

@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 
+// These routes handle user authentication and data:
+
 // Register a new user
 router.post('/register', async (req, res) => {
   try {
@@ -120,4 +122,39 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
-module.exports = router; 
+// Check if token is valid
+router.get('/check', auth, async (req, res) => {
+  try {
+    // If middleware passes, token is valid
+    // Get user info without password
+    const user = await User.findById(req.user.id).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        isAuthenticated: false,
+        message: 'User not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      isAuthenticated: true,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error('Auth check error:', error);
+    res.status(500).json({
+      success: false,
+      isAuthenticated: false,
+      message: 'Server error',
+      error: error.message
+    });
+  }
+});
+
+module.exports = router;
