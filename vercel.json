@@ -2,30 +2,37 @@
     "version": 2,
     "builds": [
       {
-        "src": "package.json",
+        "src": "client/package.json",
         "use": "@vercel/static-build",
-        "config": { 
-          "distDir": "build",
-          "buildCommand": "DISABLE_ESLINT_PLUGIN=true npm run build"
+        "config": {
+          "distDir": "client/build",
+          "buildCommand": "cd client && npm install && DISABLE_ESLINT_PLUGIN=true npm run build"
         }
       }
     ],
     "routes": [
       {
+        "handle": "filesystem"
+      },
+      {
         "src": "/static/(.*)",
-        "dest": "/static/$1"
+        "dest": "/client/static/$1"
       },
       {
         "src": "/favicon.ico",
-        "dest": "/favicon.ico"
+        "dest": "/client/favicon.ico"
       },
       {
         "src": "/manifest.json",
-        "dest": "/manifest.json"
+        "dest": "/client/manifest.json"
+      },
+      {
+        "src": "/assets/(.*)",
+        "dest": "/client/assets/$1"
       },
       {
         "src": "/(.*)",
-        "dest": "/index.html"
+        "dest": "/client/index.html"
       }
     ]
-  }
+  } 
