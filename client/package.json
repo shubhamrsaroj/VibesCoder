@@ -25,7 +25,15 @@
     "react-syntax-highlighter": "^15.6.1",
     "spotify-web-api-js": "^1.5.2",
     "web-vitals": "^2.1.4"
+    
   },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0"
+  },
+  
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
