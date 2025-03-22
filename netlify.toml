@@ -1,6 +1,6 @@
 [build]
   base = "/"
-  command = "cd client && CI=false npm install --legacy-peer-deps && npm run build"
+  command = "npm install && npm run build"
   publish = "client/build"
   functions = "server"
 
