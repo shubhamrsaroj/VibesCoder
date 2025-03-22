@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Grid, 
   Card, 
@@ -17,7 +17,7 @@ import {
   Container,
   Chip
 } from '@mui/material';
-import { getCurrentTrack, loginToSpotify, loginToSpotifyRedirect, playTrack, pauseTrack, nextTrack, previousTrack } from '../services/spotifyService';
+import { getCurrentTrack, loginToSpotify, playTrack, pauseTrack, nextTrack, previousTrack } from '../services/spotifyService';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
@@ -36,7 +36,6 @@ import LoginIcon from '@mui/icons-material/Login';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserProjects } from '../services/projectService';
-import { API_URL, DEBUG } from '../config';
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -47,42 +46,6 @@ const Dashboard = () => {
   const [userProjects, setUserProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [apiStatus, setApiStatus] = useState('loading'); // 'loading', 'online', 'offline'
-  const [spotifyLoginFailed, setSpotifyLoginFailed] = useState(false);
-  
-  // Music visualization state
-  const [visualizationActive, setVisualizationActive] = useState(false);
-  const visualizerRef = useRef(null);
-  const animationRef = useRef(null);
-  const [visualStyle, setVisualStyle] = useState('waves'); // 'waves', 'particles', 'pulse'
-  
-  // Use this for visualization settings based on track energy/etc
-  const [visualSettings, setVisualSettings] = useState({
-    primaryColor: '#3B82F6',
-    secondaryColor: '#EC4899',
-    speed: 1,
-    intensity: 0.5,
-    complexity: 0.5,
-  });
-
-  // Add useEffect to check API connection status
-  useEffect(() => {
-    const checkApiStatus = async () => {
-      try {
-        const response = await fetch(`${API_URL}/health`);
-        if (response.ok) {
-          setApiStatus('online');
-        } else {
-          setApiStatus('offline');
-        }
-      } catch (error) {
-        console.error('API connection error:', error);
-        setApiStatus('offline');
-      }
-    };
-
-    checkApiStatus();
-  }, []);
 
   useEffect(() => {
     // Make sure we're authenticated before proceeding
@@ -101,16 +64,6 @@ const Dashboard = () => {
           setCurrentTrack(track);
           if (track && track.is_playing) {
             setIsPlaying(true);
-            
-            // Enable visualization if we have a track playing
-            setVisualizationActive(true);
-            
-            // Update visualization settings based on track features
-            if (track.item) {
-              updateVisualizationFromTrack(track.item);
-            }
-          } else {
-            setVisualizationActive(false);
           }
         }
       } catch (error) {
@@ -126,359 +79,15 @@ const Dashboard = () => {
     // Poll for track updates every 3 seconds if authenticated
     let interval;
     if (isAuthenticated) {
-      fetchCurrentTrack();
+    fetchCurrentTrack();
       interval = setInterval(fetchCurrentTrack, 3000);
     }
 
     return () => {
       if (interval) clearInterval(interval);
-      
-      // Clean up animation when component unmounts
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
     };
   }, [isAuthenticated, currentUser]);
-  
-  // Function to update visualization settings based on the track
-  const updateVisualizationFromTrack = (track) => {
-    // Get the dominant color from album art
-    if (track.album && track.album.images && track.album.images.length > 0) {
-      const albumUrl = track.album.images[0].url;
-      extractDominantColor(albumUrl, (color) => {
-        // Use track features to influence visualization style
-        const tempo = track.tempo || 120; // Default tempo if not available
-        const energy = track.energy || 0.5; // Default energy level
-        const danceability = track.danceability || 0.5;
-        const valence = track.valence || 0.5; // Musical positiveness
-        
-        // Set visual style based on track features
-        if (energy > 0.7) {
-          setVisualStyle('particles');
-        } else if (danceability > 0.7) {
-          setVisualStyle('pulse');
-        } else {
-          setVisualStyle('waves');
-        }
-        
-        setVisualSettings({
-          primaryColor: color,
-          secondaryColor: getComplementaryColor(color),
-          speed: tempo / 120, // Normalize tempo to a reasonable range
-          intensity: energy,
-          complexity: danceability,
-        });
-      });
-    }
-  };
-  
-  // Extract dominant color from an image
-  const extractDominantColor = (imageUrl, callback) => {
-    const img = new Image();
-    img.crossOrigin = "Anonymous";
-    img.src = imageUrl;
-    
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 1;
-      canvas.height = 1;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, 1, 1);
-      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-      const color = `rgb(${r}, ${g}, ${b})`;
-      callback(color);
-    };
-    
-    img.onerror = () => {
-      // Fallback to default color on error
-      callback('#3B82F6');
-    };
-  };
-  
-  // Get a complementary color
-  const getComplementaryColor = (color) => {
-    // Parse the RGB color
-    const rgbMatch = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-    if (!rgbMatch) return '#EC4899'; // Fallback
-    
-    const r = parseInt(rgbMatch[1], 10);
-    const g = parseInt(rgbMatch[2], 10);
-    const b = parseInt(rgbMatch[3], 10);
-    
-    // Create complementary color (255 - value)
-    const compR = 255 - r;
-    const compG = 255 - g;
-    const compB = 255 - b;
-    
-    return `rgb(${compR}, ${compG}, ${compB})`;
-  };
-  
-  // Initialize and run visualization
-  useEffect(() => {
-    if (visualizationActive && visualizerRef.current) {
-      let canvas = visualizerRef.current;
-      let ctx = canvas.getContext('2d');
-      
-      // Set canvas to fullscreen
-      const resizeCanvas = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      };
-      
-      resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
-      
-      // Animation variables
-      let particles = [];
-      let wavePoints = [];
-      let lastTime = 0;
-      
-      // Initialize based on visual style
-      if (visualStyle === 'particles') {
-        initParticles();
-      } else if (visualStyle === 'waves') {
-        initWaves();
-      }
-      
-      // Initialize particles
-      function initParticles() {
-        particles = [];
-        const particleCount = Math.floor(100 * visualSettings.complexity);
-        
-        for (let i = 0; i < particleCount; i++) {
-          particles.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            size: Math.random() * 5 + 1,
-            speed: (Math.random() * 2 + 0.5) * visualSettings.speed,
-            directionX: Math.random() * 2 - 1,
-            directionY: Math.random() * 2 - 1,
-            color: Math.random() > 0.5 ? visualSettings.primaryColor : visualSettings.secondaryColor
-          });
-        }
-      }
-      
-      // Initialize waves
-      function initWaves() {
-        wavePoints = [];
-        const pointCount = Math.floor(10 * visualSettings.complexity) + 5;
-        
-        for (let i = 0; i < pointCount; i++) {
-          wavePoints.push({
-            x: canvas.width * (i / (pointCount - 1)),
-            y: canvas.height / 2,
-            amplitude: canvas.height * 0.1 * visualSettings.intensity,
-            speed: (0.01 + Math.random() * 0.02) * visualSettings.speed,
-            offset: Math.random() * Math.PI * 2
-          });
-        }
-      }
-      
-      // Animation function
-      const animate = (time) => {
-        if (!visualizationActive) return;
-        
-        // Calculate delta time for smooth animations
-        const deltaTime = time - lastTime;
-        lastTime = time;
-        
-        // Clear canvas with a semi-transparent background for trailing effect
-        ctx.fillStyle = `rgba(15, 23, 42, ${visualStyle === 'pulse' ? 0.3 : 0.1})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Apply different visualization styles
-        if (visualStyle === 'particles') {
-          animateParticles(deltaTime);
-        } else if (visualStyle === 'waves') {
-          animateWaves(time);
-        } else if (visualStyle === 'pulse') {
-          animatePulse(time);
-        }
-        
-        // Continue animation loop
-        animationRef.current = requestAnimationFrame(animate);
-      };
-      
-      // Particle animation
-      function animateParticles(deltaTime) {
-        particles.forEach(particle => {
-          // Move particles
-          particle.x += particle.directionX * particle.speed * (deltaTime / 16);
-          particle.y += particle.directionY * particle.speed * (deltaTime / 16);
-          
-          // Bounce off edges
-          if (particle.x < 0 || particle.x > canvas.width) {
-            particle.directionX *= -1;
-          }
-          if (particle.y < 0 || particle.y > canvas.height) {
-            particle.directionY *= -1;
-          }
-          
-          // Draw particle
-          ctx.beginPath();
-          ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-          ctx.fillStyle = particle.color;
-          ctx.fill();
-          
-          // Connect nearby particles with lines
-          connectParticles(particle);
-        });
-      }
-      
-      // Connect particles with lines
-      function connectParticles(particle) {
-        const connectionRadius = 100 * visualSettings.complexity;
-        
-        particles.forEach(otherParticle => {
-          if (particle === otherParticle) return;
-          
-          const dx = particle.x - otherParticle.x;
-          const dy = particle.y - otherParticle.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance < connectionRadius) {
-            // Calculate line opacity based on distance
-            const opacity = 1 - (distance / connectionRadius);
-            
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(59, 130, 246, ${opacity * 0.5})`;
-            ctx.lineWidth = 1;
-            ctx.moveTo(particle.x, particle.y);
-            ctx.lineTo(otherParticle.x, otherParticle.y);
-            ctx.stroke();
-          }
-        });
-      }
-      
-      // Wave animation
-      function animateWaves(time) {
-        ctx.beginPath();
-        ctx.moveTo(0, canvas.height / 2);
-        
-        // Draw primary wave
-        for (let i = 0; i < wavePoints.length; i++) {
-          const point = wavePoints[i];
-          point.y = canvas.height / 2 + 
-                    Math.sin(time * point.speed + point.offset) * 
-                    point.amplitude;
-          
-          if (i === 0) {
-            ctx.moveTo(point.x, point.y);
-          } else {
-            // Use quadratic curves for smooth waves
-            const xc = (point.x + wavePoints[i-1].x) / 2;
-            const yc = (point.y + wavePoints[i-1].y) / 2;
-            ctx.quadraticCurveTo(wavePoints[i-1].x, wavePoints[i-1].y, xc, yc);
-          }
-        }
-        
-        // Complete the wave by going to bottom right, then bottom left, then back to start
-        ctx.lineTo(canvas.width, canvas.height);
-        ctx.lineTo(0, canvas.height);
-        ctx.closePath();
-        
-        // Create gradient for wave
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, visualSettings.primaryColor);
-        gradient.addColorStop(1, visualSettings.secondaryColor);
-        
-        ctx.fillStyle = gradient;
-        ctx.globalAlpha = 0.2;
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        
-        // Draw secondary wave (smaller)
-        ctx.beginPath();
-        for (let i = 0; i < wavePoints.length; i++) {
-          const point = wavePoints[i];
-          const y = canvas.height / 2 + 
-                  Math.sin(time * point.speed * 1.5 + point.offset + Math.PI) * 
-                  (point.amplitude * 0.6);
-          
-          if (i === 0) {
-            ctx.moveTo(point.x, y);
-          } else {
-            const xc = (point.x + wavePoints[i-1].x) / 2;
-            const yc = (y + wavePoints[i-1].y) / 2;
-            ctx.quadraticCurveTo(wavePoints[i-1].x, wavePoints[i-1].y, xc, yc);
-          }
-        }
-        
-        ctx.strokeStyle = visualSettings.secondaryColor;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-      
-      // Pulse animation
-      function animatePulse(time) {
-        const pulseCount = 3;
-        const baseRadius = Math.min(canvas.width, canvas.height) * 0.2;
-        
-        for (let i = 0; i < pulseCount; i++) {
-          // Calculate pulse size based on time
-          const speed = (0.0005 + (i * 0.0002)) * visualSettings.speed;
-          const size = ((time * speed) % 1);
-          const radius = baseRadius + (size * baseRadius * 2);
-          const opacity = 1 - size;
-          
-          // Draw pulse circle
-          ctx.beginPath();
-          ctx.arc(canvas.width / 2, canvas.height / 2, radius, 0, Math.PI * 2);
-          
-          // Create gradient for pulse
-          const gradient = ctx.createRadialGradient(
-            canvas.width / 2, canvas.height / 2, 0,
-            canvas.width / 2, canvas.height / 2, radius
-          );
-          gradient.addColorStop(0, `rgba(0,0,0,0)`);
-          gradient.addColorStop(0.5, i % 2 === 0 ? 
-            `rgba(${hexToRgb(visualSettings.primaryColor)},${opacity * 0.3})` : 
-            `rgba(${hexToRgb(visualSettings.secondaryColor)},${opacity * 0.3})`);
-          gradient.addColorStop(1, 'rgba(0,0,0,0)');
-          
-          ctx.fillStyle = gradient;
-          ctx.fill();
-        }
-      }
-      
-      // Helper to convert hex to rgb
-      function hexToRgb(hexOrRgb) {
-        // Handle RGB format
-        if (hexOrRgb.startsWith('rgb')) {
-          const rgbMatch = hexOrRgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-          if (rgbMatch) {
-            return `${rgbMatch[1]},${rgbMatch[2]},${rgbMatch[3]}`;
-          }
-          return '59,130,246'; // Default blue
-        }
-        
-        // Handle hex format
-        let hex = hexOrRgb.replace('#', '');
-        if (hex.length === 3) {
-          hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-        }
-        
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
-        
-        return `${r},${g},${b}`;
-      }
-      
-      // Start animation
-      animationRef.current = requestAnimationFrame(animate);
-      
-      // Clean up
-      return () => {
-        window.removeEventListener('resize', resizeCanvas);
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current);
-        }
-      };
-    }
-  }, [visualizationActive, visualStyle, visualSettings]);
 
-  // Fetch user projects
   useEffect(() => {
     // Fetch user projects
     const fetchUserProjects = async () => {
@@ -500,25 +109,9 @@ const Dashboard = () => {
 
   const handleSpotifyLogin = async () => {
     try {
-      setSpotifyLoginFailed(false);
       await loginToSpotify();
     } catch (error) {
       console.error('Spotify login error:', error);
-      
-      // If it's a popup blocking error, show the alternative
-      if (error.message.includes('Popup was blocked') || 
-          error.message.includes('Authentication process was cancelled') ||
-          error.message.includes('timed out')) {
-        setSpotifyLoginFailed(true);
-      }
-    }
-  };
-
-  const handleSpotifyRedirectLogin = async () => {
-    try {
-      await loginToSpotifyRedirect();
-    } catch (error) {
-      console.error('Spotify redirect login error:', error);
     }
   };
 
@@ -677,54 +270,6 @@ const Dashboard = () => {
   const successGradient = 'linear-gradient(135deg, #10B981 0%, #047857 100%)';
   const cardGlow = '0 0 15px rgba(59, 130, 246, 0.2)';
 
-  // Render a small API status indicator
-  const renderApiStatus = () => {
-    if (apiStatus === 'loading') {
-      return (
-        <Chip 
-          size="small" 
-          label="Checking API..." 
-          sx={{ 
-            bgcolor: alpha('#FFA726', 0.2),
-            color: '#FFA726',
-            position: 'fixed',
-            bottom: 16,
-            right: 16
-          }} 
-        />
-      );
-    } else if (apiStatus === 'offline') {
-      return (
-        <Chip 
-          size="small" 
-          label="API Offline" 
-          sx={{ 
-            bgcolor: alpha('#F44336', 0.2),
-            color: '#F44336',
-            position: 'fixed',
-            bottom: 16,
-            right: 16
-          }} 
-        />
-      );
-    } else {
-      return (
-        <Chip 
-          size="small" 
-          label="API Connected" 
-          sx={{ 
-            bgcolor: alpha('#4CAF50', 0.2),
-            color: '#4CAF50',
-            position: 'fixed',
-            bottom: 16,
-            right: 16,
-            opacity: 0.7
-          }} 
-        />
-      );
-    }
-  };
-
   return (
     <Box 
       sx={{ 
@@ -732,36 +277,10 @@ const Dashboard = () => {
         background: darkGradient,
         color: 'white',
         pt: 2,
-        pb: 6,
-        position: 'relative'
+        pb: 6
       }}
     >
-      {/* Canvas for music visualization */}
-      {isPlaying && (
-        <Box sx={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          pointerEvents: 'none',
-          zIndex: 0
-        }}>
-          <canvas 
-            ref={visualizerRef} 
-            style={{ 
-              position: 'absolute', 
-              top: 0, 
-              left: 0, 
-              width: '100%', 
-              height: '100%',
-              opacity: 0.8
-            }}
-          />
-        </Box>
-      )}
-      
-      <Container maxWidth="xl" sx={{ py: 3, position: 'relative', zIndex: 1 }}>
+      <Container maxWidth="xl" sx={{ py: 3 }}>
         <Box sx={{ 
           mb: 5, 
           pt: 2,
@@ -1188,59 +707,27 @@ const Dashboard = () => {
                     <Typography sx={{ mb: 3, color: alpha('#fff', 0.7) }}>
                       Open Spotify to play music while you code
                   </Typography>
-                  
-                  {spotifyLoginFailed ? (
-                    <>
-                      <Typography sx={{ mb: 2, color: alpha('#fff', 0.7) }}>
-                        Popup was blocked. Try the redirect method instead:
-                      </Typography>
-                      <Button 
-                        variant="contained" 
-                        startIcon={<LoginIcon />}
-                        onClick={handleSpotifyRedirectLogin}
-                        sx={{
-                          background: 'linear-gradient(90deg, #1DB954, #1aa34a)',
-                          px: 3,
-                          py: 1.2,
-                          borderRadius: 2,
-                          color: 'white',
-                          boxShadow: '0 4px 15px rgba(29, 185, 84, 0.4)',
-                          '&:hover': {
-                            background: 'linear-gradient(90deg, #1aa34a, #168d40)',
-                          }
-                        }}
-                      >
-                        Login with Spotify
-                      </Button>
-                      <Typography variant="caption" sx={{ display: 'block', mt: 2, color: alpha('#fff', 0.5) }}>
-                        This will redirect you to Spotify for authentication
-                      </Typography>
-                    </>
-                  ) : (
-                    <>
-                      <Button 
-                        variant="contained" 
-                        startIcon={<LoginIcon />}
-                        onClick={handleSpotifyLogin}
-                        sx={{
-                          background: 'linear-gradient(90deg, #1DB954, #1aa34a)',
-                          px: 3,
-                          py: 1.2,
-                          borderRadius: 2,
-                          color: 'white',
-                          boxShadow: '0 4px 15px rgba(29, 185, 84, 0.4)',
-                          '&:hover': {
-                            background: 'linear-gradient(90deg, #1aa34a, #168d40)',
-                          }
-                        }}
-                      >
-                        Open Spotify
-                      </Button>
-                      <Typography variant="caption" sx={{ display: 'block', mt: 2, color: alpha('#fff', 0.5) }}>
-                        This will open Spotify in a new window
-                      </Typography>
-                    </>
-                  )}
+                  <Button 
+                    variant="contained" 
+                      startIcon={<LoginIcon />}
+                      onClick={handleSpotifyLogin}
+                      sx={{
+                        background: 'linear-gradient(90deg, #1DB954, #1aa34a)',
+                        px: 3,
+                        py: 1.2,
+                        borderRadius: 2,
+                        color: 'white',
+                        boxShadow: '0 4px 15px rgba(29, 185, 84, 0.4)',
+                        '&:hover': {
+                          background: 'linear-gradient(90deg, #1aa34a, #168d40)',
+                        }
+                      }}
+                    >
+                      Open Spotify
+                  </Button>
+                    <Typography variant="caption" sx={{ display: 'block', mt: 2, color: alpha('#fff', 0.5) }}>
+                      This will open Spotify in a new window
+                    </Typography>
                 </Box>
               )}
             </CardContent>
@@ -1477,9 +964,6 @@ const Dashboard = () => {
         </Grid>
       </Grid>
       </Container>
-      
-      {/* API Status Indicator */}
-      {renderApiStatus()}
     </Box>
   );
 };
