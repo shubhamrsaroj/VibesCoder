@@ -1296,21 +1296,35 @@ const CodeEditor = () => {
   // Update the handleSendMessage function
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
-
-    const userMessage = inputMessage;
+    
+    // Add user message to chat history
+    const userMessage = { role: 'user', content: inputMessage };
+    const updatedChatHistory = [...messages, userMessage];
+    setMessages(updatedChatHistory);
     setInputMessage('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/ai/chat', {
+      const BACKEND_URL = process.env.REACT_APP_API_URL || 'https://vibescoder.onrender.com';
+      const response = await fetch(`${BACKEND_URL}/api/ai/chat`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
-          messages: [...messages, { role: 'user', content: userMessage }]
+          messages: updatedChatHistory,
+          context: {
+            activeFile: activeFile ? {
+              name: activeFile.name,
+              language: getLanguageForFile(activeFile.name),
+              content: activeFile.value
+            } : null,
+            allFiles: getAllFilesFlat(files).map(file => ({
+              name: file.name,
+              language: getLanguageForFile(file.name),
+              content: file.value
+            }))
+          }
         })
       });
 
@@ -1330,9 +1344,8 @@ const CodeEditor = () => {
       console.error('Error:', error);
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: 'Sorry, I encountered an error. Please try again.' 
+        content: 'Sorry, I encountered an error while processing your request. Please try again later.' 
       }]);
-    } finally {
       setIsLoading(false);
     }
   };
