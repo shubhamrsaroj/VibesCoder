@@ -6,6 +6,9 @@ const SPOTIFY_CLIENT_ID = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
 const BACKEND_URL = process.env.REACT_APP_API_URL || 'https://vibescoder.onrender.com';
 const REDIRECT_URI = `${BACKEND_URL}/api/spotify/callback`;
 
+// Debug logging
+console.log('Spotify service initialized with:', { BACKEND_URL, REDIRECT_URI });
+
 // Helper function to get headers
 const getHeaders = (token) => ({
   'Authorization': `Bearer ${token}`,
@@ -85,23 +88,63 @@ const handleResponse = async (response, retryCount = 0) => {
   }
 };
 
+// Check if we're in a popup window
+const isPopup = () => {
+  return window.opener && window.opener !== window;
+};
+
+// Function to detect if we're on the Netlify site
+const isNetlifySite = () => {
+  return window.location.hostname.includes('netlify.app') || 
+         process.env.NODE_ENV === 'production';
+};
+
 export const loginToSpotify = async () => {
   try {
     console.log('Initiating Spotify login...');
+    
+    // If we're on the Netlify production site, default to redirect method
+    // as it's more reliable with CORS and popup issues
+    if (isNetlifySite()) {
+      console.log('Production site detected, using redirect method');
+      return await loginToSpotifyRedirect();
+    }
+    
+    // Check if popups are allowed
+    // If we've had issues with popups before, use the redirect method
+    if (localStorage.getItem('spotify_popup_blocked') === 'true') {
+      console.log('Previous popup issues detected, using redirect method');
+      return await loginToSpotifyRedirect();
+    }
     
     // First check if we can open popups at all
     const testPopup = window.open('about:blank', '_blank', 'width=1,height=1');
     if (!testPopup || testPopup.closed || typeof testPopup.closed === 'undefined') {
       console.error('Popup blocked by browser');
-      throw new Error('Popup blocked by browser. Please disable popup blocker for this site.');
+      localStorage.setItem('spotify_popup_blocked', 'true');
+      // If popup is blocked, fall back to redirect method
+      return await loginToSpotifyRedirect();
     }
     testPopup.close();
     
+    // Get auth URL from backend
+    console.log('Fetching auth URL from:', `${BACKEND_URL}/api/spotify/login`);
     const response = await fetch(`${BACKEND_URL}/api/spotify/login`);
+    if (!response.ok) {
+      console.error('Failed to get login URL:', response.status, response.statusText);
+      throw new Error(`Failed to get login URL: ${response.status} ${response.statusText}`);
+    }
+    
     const data = await response.json();
     
-    if (data.authUrl) {
-      return new Promise((resolve, reject) => {
+    if (!data.authUrl) {
+      console.error('No auth URL in response:', data);
+      throw new Error('Failed to get authentication URL from server');
+    }
+    
+    console.log('Got auth URL:', data.authUrl);
+    return new Promise((resolve, reject) => {
+      try {
         // Calculate centered position for popup
         const width = 450;
         const height = 730;
@@ -116,6 +159,8 @@ export const loginToSpotify = async () => {
         );
 
         if (!popup) {
+          console.error('Popup was blocked');
+          localStorage.setItem('spotify_popup_blocked', 'true');
           reject(new Error('Popup was blocked by the browser. Please disable popup blocker for this site.'));
           return;
         }
@@ -125,19 +170,30 @@ export const loginToSpotify = async () => {
 
         // Handle messages from the popup
         const handleMessage = (event) => {
-          // Check origin for security if needed
-          // if (event.origin !== window.location.origin) return;
+          // Log the event for debugging
+          console.log('Received message event:', {
+            origin: event.origin,
+            data: event.data,
+            hasEventData: !!event.data
+          });
+          
+          // Safely check event data
+          if (!event.data) return;
           
           if (event.data.type === 'spotify-token') {
+            console.log('Received spotify token from callback');
             window.localStorage.setItem('spotify_token', event.data.access_token);
             window.localStorage.setItem('spotify_refresh_token', event.data.refresh_token);
             window.removeEventListener('message', handleMessage);
             clearInterval(checkClosed);
+            clearTimeout(timeoutId);
             popup.close();
             resolve(true);
           } else if (event.data.type === 'spotify-error') {
+            console.error('Spotify auth error:', event.data.error);
             window.removeEventListener('message', handleMessage);
             clearInterval(checkClosed);
+            clearTimeout(timeoutId);
             popup.close();
             reject(new Error(event.data.error || 'Authentication failed'));
           }
@@ -149,26 +205,69 @@ export const loginToSpotify = async () => {
         const checkClosed = setInterval(() => {
           if (!popup || popup.closed) {
             clearInterval(checkClosed);
+            clearTimeout(timeoutId);
             window.removeEventListener('message', handleMessage);
+            console.log('Authentication popup was closed');
+            localStorage.setItem('spotify_popup_closed', 'true');
             reject(new Error('Authentication process was cancelled. Please try again.'));
           }
         }, 1000);
         
         // Set a timeout after which we consider the authentication failed
-        setTimeout(() => {
-          if (!popup.closed) {
+        const timeoutId = setTimeout(() => {
+          if (popup && !popup.closed) {
+            console.log('Authentication timed out');
             clearInterval(checkClosed);
             window.removeEventListener('message', handleMessage);
             popup.close();
             reject(new Error('Authentication timed out. Please try again.'));
           }
         }, 300000); // 5 minutes max
-      });
+      } catch (popupError) {
+        console.error('Error creating popup:', popupError);
+        // Fall back to redirect method
+        loginToSpotifyRedirect()
+          .then(resolve)
+          .catch(reject);
+      }
+    });
+  } catch (error) {
+    console.error('Spotify login error:', error);
+    // If there's any error in the process, try redirect login as fallback
+    try {
+      return await loginToSpotifyRedirect();
+    } catch (redirectError) {
+      console.error('Redirect login also failed:', redirectError);
+      throw error; // Throw the original error
+    }
+  }
+};
+
+// Direct URL login option that doesn't use popups
+export const loginToSpotifyRedirect = async () => {
+  try {
+    console.log('Initiating Spotify redirect login...');
+    
+    const response = await fetch(`${BACKEND_URL}/api/spotify/login`);
+    if (!response.ok) {
+      throw new Error(`Failed to get login URL: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.authUrl) {
+      // Save the current URL so we can redirect back after auth
+      localStorage.setItem('spotify_redirect_url', window.location.href);
+      
+      console.log('Redirecting to Spotify auth:', data.authUrl);
+      // Redirect the whole page instead of opening a popup
+      window.location.href = data.authUrl;
+      return true;
     } else {
       throw new Error('Failed to get authentication URL from server');
     }
   } catch (error) {
-    console.error('Spotify login error:', error);
+    console.error('Spotify redirect login error:', error);
     throw error;
   }
 };
