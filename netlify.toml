@@ -9,6 +9,13 @@
   NODE_ENV = "production"
   DISABLE_ESLINT_PLUGIN = "true"
   SKIP_PREFLIGHT_CHECK = "true"
+  NODE_VERSION = "18"
+
+[dev]
+  command = "npm run start"
+  port = 8888
+  targetPort = 3000
+  functions = "server"
 
 [[redirects]]
   from = "/api/*"
