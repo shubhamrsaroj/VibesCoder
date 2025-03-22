@@ -1,38 +1,18 @@
 {
   "name": "vibes-coder",
   "version": "1.0.0",
-  "description": "VibesCoder - Full Stack Development Platform",
+  "description": "VibesCoder - Music and AI Platform",
   "scripts": {
-    "start": "node server/index.js",
-    "server": "nodemon server/index.js",
+    "start": "cd server && node index.js",
     "client": "cd client && npm start",
+    "server": "cd server && nodemon index.js",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "build": "cd client && npm install --legacy-peer-deps && npm run build",
-    "install-client": "cd client && npm install --legacy-peer-deps",
-    "install-server": "cd server && npm install",
-    "install-all": "npm install && npm run install-server && npm run install-client",
-    "deploy": "npm run build && netlify deploy --prod"
+    "build": "cd client && npm install && npm run build"
   },
-  "keywords": [
-    "react",
-    "nodejs",
-    "mongodb",
-    "express",
-    "development",
-    "platform"
-  ],
-  "author": "Shubham Saroj",
+  "keywords": [],
+  "author": "",
   "license": "ISC",
   "dependencies": {
-    "concurrently": "^8.0.1",
-    "dotenv": "^16.0.3"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.22",
-    "netlify-cli": "^12.0.11"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "concurrently": "^8.2.2"
   }
 }
