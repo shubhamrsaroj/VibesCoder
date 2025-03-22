@@ -31,6 +31,774 @@ import {
 } from '@mui/icons-material';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { styled } from '@mui/material/styles';
+import { Global, css } from '@emotion/react';
+
+// Global styles for HTML/CSS components
+const globalStyles = css`
+  @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+
+  .modern-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .modern-btn.primary { background: #3B82F6; color: white; }
+  .modern-btn.secondary { background: #6B7280; color: white; }
+  .modern-btn.success { background: #10B981; color: white; }
+  .modern-btn.danger { background: #EF4444; color: white; }
+  .modern-btn.outline {
+    background: transparent;
+    border: 2px solid #3B82F6;
+    color: #3B82F6;
+  }
+  .modern-btn.gradient {
+    background: linear-gradient(45deg, #3B82F6, #8B5CF6);
+    color: white;
+  }
+  .modern-btn.rounded {
+    border-radius: 25px;
+    background: #3B82F6;
+    color: white;
+  }
+  .modern-btn.disabled {
+    background: #E5E7EB;
+    color: #9CA3AF;
+    cursor: not-allowed;
+  }
+  .modern-btn:hover:not(.disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  /* Progress Bar Styles */
+  .progress-bar {
+    width: 100%;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #3B82F6;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+  }
+  .progress-bar.striped .progress-fill {
+    background-image: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.15) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.15) 50%,
+      rgba(255, 255, 255, 0.15) 75%,
+      transparent 75%,
+      transparent
+    );
+    background-size: 20px 20px;
+    animation: progress-stripes 1s linear infinite;
+  }
+  .progress-bar.gradient .progress-fill {
+    background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+  }
+
+  /* Accordion Styles */
+  .accordion {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .accordion-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .accordion-header {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    text-align: left;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .accordion-header:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .accordion-content {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .accordion-item.active .accordion-content {
+    padding: 1rem;
+    max-height: 200px;
+  }
+
+  /* Social Button Styles */
+  .social-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .social-btn i {
+    font-size: 1.2rem;
+  }
+  .social-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  .social-btn.facebook { background: #1877F2; }
+  .social-btn.twitter { background: #1DA1F2; }
+  .social-btn.linkedin { background: #0A66C2; }
+  .social-btn.github { background: #24292E; }
+  .social-btn.instagram {
+    background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+  }
+
+  /* Animations */
+  @keyframes progress-stripes {
+    0% { background-position: 0 0; }
+    100% { background-position: 20px 0; }
+  }
+
+  /* Pricing Table Styles */
+  .pricing-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 300px;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .pricing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+  .pricing-card.popular {
+    background: linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+  .popular-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #3B82F6;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+  }
+  .pricing-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .pricing-header h3 {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .price {
+    font-size: 3rem;
+    color: white;
+  }
+  .currency {
+    font-size: 1.5rem;
+    vertical-align: super;
+  }
+  .period {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .pricing-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+  }
+  .pricing-features li {
+    color: white;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .pricing-features li.disabled {
+    color: rgba(255, 255, 255, 0.4);
+  }
+  .pricing-btn {
+    width: 100%;
+    padding: 1rem;
+    background: #3B82F6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .pricing-btn:hover {
+    background: #2563EB;
+  }
+
+  /* Navigation Menu Styles */
+  .modern-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+  }
+
+  .nav-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+  }
+
+  .nav-menu {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+
+  .nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .dropdown {
+    position: relative;
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 4px;
+    padding: 0.5rem;
+    min-width: 150px;
+    display: none;
+  }
+
+  .dropdown:hover .dropdown-menu {
+    display: block;
+  }
+
+  .dropdown-menu li {
+    list-style: none;
+  }
+
+  .dropdown-menu a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    display: block;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+
+  .dropdown-menu a:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-content {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    transform: translateY(-20px);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+
+  .modal-overlay.active .modal-content {
+    transform: translateY(0);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: transform 0.3s ease;
+  }
+
+  .modal-close:hover {
+    transform: rotate(90deg);
+  }
+
+  .modal-body {
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+`;
+
+// Add styled components for HTML/CSS components
+const ModernButton = styled('button')(({ theme }) => ({
+  padding: '10px 20px',
+  border: 'none',
+  borderRadius: '5px',
+  fontWeight: 600,
+  cursor: 'pointer',
+  transition: 'all 0.3s ease',
+  '&.primary': {
+    background: '#3B82F6',
+    color: 'white',
+  },
+  '&.secondary': {
+    background: '#6B7280',
+    color: 'white',
+  },
+  '&.success': {
+    background: '#10B981',
+    color: 'white',
+  },
+  '&.danger': {
+    background: '#EF4444',
+    color: 'white',
+  },
+  '&.outline': {
+    background: 'transparent',
+    border: '2px solid #3B82F6',
+    color: '#3B82F6',
+  },
+  '&.gradient': {
+    background: 'linear-gradient(45deg, #3B82F6, #8B5CF6)',
+    color: 'white',
+  },
+  '&.rounded': {
+    borderRadius: '25px',
+    background: '#3B82F6',
+    color: 'white',
+  },
+  '&.disabled': {
+    background: '#E5E7EB',
+    color: '#9CA3AF',
+    cursor: 'not-allowed',
+  },
+  '&:hover:not(.disabled)': {
+    transform: 'translateY(-2px)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+  },
+}));
+
+const LoaderContainer = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '10px',
+  '& p': {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: '14px',
+  },
+});
+
+const Loader = styled('div')({
+  width: '40px',
+  height: '40px',
+  '&.spinner': {
+    border: '4px solid rgba(255, 255, 255, 0.1)',
+    borderLeftColor: '#3B82F6',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+  '&.pulse': {
+    background: '#3B82F6',
+    borderRadius: '50%',
+    animation: 'pulse 1.5s ease-in-out infinite',
+  },
+  '&.dots': {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    '&::before, &::after': {
+      content: '""',
+      width: '8px',
+      height: '8px',
+      background: '#3B82F6',
+      borderRadius: '50%',
+      animation: 'dots 1s infinite ease-in-out',
+    },
+    '&::after': {
+      animationDelay: '0.5s',
+    },
+  },
+  '@keyframes spin': {
+    to: { transform: 'rotate(360deg)' },
+  },
+  '@keyframes pulse': {
+    '0%': { transform: 'scale(0.8)', opacity: 0.5 },
+    '50%': { transform: 'scale(1)', opacity: 1 },
+    '100%': { transform: 'scale(0.8)', opacity: 0.5 },
+  },
+  '@keyframes dots': {
+    '0%, 100%': { transform: 'translateY(0)' },
+    '50%': { transform: 'translateY(-10px)' },
+  },
+});
+
+// Replace style jsx with styled components
+const CardStyles = styled('div')({
+  '.modern-card': {
+    width: '300px',
+    background: 'white',
+    borderRadius: '15px',
+    overflow: 'hidden',
+    boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-5px)',
+      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+    }
+  },
+  '.card-image': {
+    width: '100%',
+    height: '200px',
+    overflow: 'hidden',
+    '& img': {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+      transition: 'transform 0.3s ease',
+    }
+  },
+  '.modern-card:hover .card-image img': {
+    transform: 'scale(1.1)',
+  },
+  '.card-content': {
+    padding: '20px',
+    '& h3': {
+      margin: '0 0 10px 0',
+      color: '#1F2937',
+    },
+    '& p': {
+      color: '#6B7280',
+      marginBottom: '20px',
+    }
+  },
+  '.card-btn': {
+    padding: '8px 16px',
+    background: '#3B82F6',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      background: '#2563EB',
+    }
+  },
+  '.modern-card.glass': {
+    background: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    '& h3': {
+      color: 'white',
+    },
+    '& p': {
+      color: 'rgba(255, 255, 255, 0.8)',
+    }
+  },
+  '.card-btn.glass': {
+    background: 'rgba(255, 255, 255, 0.2)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    '&:hover': {
+      background: 'rgba(255, 255, 255, 0.3)',
+    }
+  }
+});
+
+const FormStyles = styled('div')({
+  '.modern-form': {
+    width: '100%',
+    maxWidth: '500px',
+    padding: '2rem',
+    background: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '15px',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+  },
+  '.form-group': {
+    position: 'relative',
+    marginBottom: '1.5rem',
+  },
+  '.form-input': {
+    width: '100%',
+    padding: '12px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '8px',
+    color: 'white',
+    transition: 'all 0.3s ease',
+    '&:focus': {
+      outline: 'none',
+      borderColor: '#3B82F6',
+      boxShadow: '0 0 0 2px rgba(59, 130, 246, 0.2)',
+    }
+  },
+  '.form-label': {
+    position: 'absolute',
+    left: '12px',
+    top: '12px',
+    color: 'rgba(255, 255, 255, 0.7)',
+    transition: 'all 0.3s ease',
+    pointerEvents: 'none',
+  },
+  '.form-input:focus + .form-label, .form-input:not(:placeholder-shown) + .form-label': {
+    transform: 'translateY(-24px) scale(0.8)',
+    color: '#3B82F6',
+  },
+  '.form-button': {
+    width: '100%',
+    padding: '12px',
+    background: '#3B82F6',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      background: '#2563EB',
+      transform: 'translateY(-2px)',
+    }
+  }
+});
+
+// Add new styled component for Bootstrap components
+const BootstrapStyles = styled('div')({
+  '.btn': {
+    padding: '0.75rem 1.5rem',
+    borderRadius: '0.5rem',
+    fontWeight: '600',
+    transition: 'all 0.3s ease',
+    textTransform: 'none',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    }
+  },
+  '.btn-primary': {
+    background: '#0d6efd',
+    border: 'none',
+    '&:hover': {
+      background: '#0b5ed7',
+    }
+  },
+  '.card': {
+    borderRadius: '1rem',
+    border: '1px solid rgba(255,255,255,0.1)',
+    background: 'rgba(255,255,255,0.05)',
+    backdropFilter: 'blur(10px)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-5px)',
+      boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
+    }
+  },
+  '.card-header': {
+    background: 'rgba(255,255,255,0.1)',
+    borderBottom: '1px solid rgba(255,255,255,0.1)',
+    padding: '1rem 1.5rem',
+  },
+  '.card-body': {
+    padding: '1.5rem',
+  },
+  '.form-control': {
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: '0.5rem',
+    color: 'white',
+    padding: '0.75rem 1rem',
+    transition: 'all 0.3s ease',
+    '&:focus': {
+      background: 'rgba(255,255,255,0.1)',
+      borderColor: '#0d6efd',
+      boxShadow: '0 0 0 0.25rem rgba(13,110,253,0.25)',
+    }
+  },
+  '.navbar': {
+    padding: '1rem',
+    background: 'rgba(255,255,255,0.05)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '0.5rem',
+  },
+  '.nav-link': {
+    color: 'rgba(255,255,255,0.8)',
+    padding: '0.5rem 1rem',
+    borderRadius: '0.5rem',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      color: 'white',
+      background: 'rgba(255,255,255,0.1)',
+    }
+  }
+});
+
+// Add new styled component for tooltips
+const TooltipStyles = styled('div')({
+  '.tooltip-btn': {
+    position: 'relative',
+    padding: '8px 16px',
+    background: '#3B82F6',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    '&::before': {
+      content: 'attr(data-tooltip)',
+      position: 'absolute',
+      background: 'rgba(0, 0, 0, 0.8)',
+      color: 'white',
+      padding: '4px 8px',
+      borderRadius: '4px',
+      fontSize: '14px',
+      whiteSpace: 'nowrap',
+      opacity: 0,
+      visibility: 'hidden',
+      transition: 'all 0.3s ease'
+    },
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      border: '6px solid transparent',
+      opacity: 0,
+      visibility: 'hidden',
+      transition: 'all 0.3s ease'
+    },
+    '&:not([data-position])::before, &[data-position="top"]::before': {
+      bottom: '100%',
+      left: '50%',
+      transform: 'translateX(-50%) translateY(-10px)'
+    },
+    '&:not([data-position])::after, &[data-position="top"]::after': {
+      bottom: '100%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      borderTopColor: 'rgba(0, 0, 0, 0.8)'
+    },
+    '&[data-position="bottom"]::before': {
+      top: '100%',
+      left: '50%',
+      transform: 'translateX(-50%) translateY(10px)'
+    },
+    '&[data-position="bottom"]::after': {
+      top: '100%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      borderBottomColor: 'rgba(0, 0, 0, 0.8)'
+    },
+    '&[data-position="left"]::before': {
+      right: '100%',
+      top: '50%',
+      transform: 'translateY(-50%) translateX(-10px)'
+    },
+    '&[data-position="left"]::after': {
+      right: '100%',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      borderLeftColor: 'rgba(0, 0, 0, 0.8)'
+    },
+    '&[data-position="right"]::before': {
+      left: '100%',
+      top: '50%',
+      transform: 'translateY(-50%) translateX(10px)'
+    },
+    '&[data-position="right"]::after': {
+      left: '100%',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      borderRightColor: 'rgba(0, 0, 0, 0.8)'
+    },
+    '&:hover::before, &:hover::after': {
+      opacity: 1,
+      visibility: 'visible'
+    },
+    '&:not([data-position]):hover::before, &[data-position="top"]:hover::before': {
+      transform: 'translateX(-50%) translateY(0)'
+    },
+    '&[data-position="bottom"]:hover::before': {
+      transform: 'translateX(-50%) translateY(20px)'
+    },
+    '&[data-position="left"]:hover::before': {
+      transform: 'translateY(-50%) translateX(0)'
+    },
+    '&[data-position="right"]:hover::before': {
+      transform: 'translateY(-50%) translateX(20px)'
+    }
+  }
+});
 
 const ComponentLibrary = () => {
   const theme = useTheme();
@@ -42,7 +810,8 @@ const ComponentLibrary = () => {
   const frameworks = [
     { id: 'mui', name: 'Material-UI' },
     { id: 'bootstrap', name: 'Bootstrap' },
-    { id: 'tailwind', name: 'Tailwind CSS' }
+    { id: 'tailwind', name: 'Tailwind CSS' },
+    { id: 'html', name: 'HTML/CSS' }
   ];
 
   const categories = [
@@ -322,65 +1091,38 @@ const ComponentLibrary = () => {
       }
     ],
     bootstrap: [
-      // Bootstrap Buttons
       {
         id: 'bs-buttons',
         category: 'buttons',
         title: 'Bootstrap Buttons',
-        description: 'Various button styles in Bootstrap',
-        component: <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <button className="btn btn-primary">Primary</button>
-            <button className="btn btn-secondary">Secondary</button>
-            <button className="btn btn-success">Success</button>
-            <button className="btn btn-danger">Danger</button>
-            <button className="btn btn-warning">Warning</button>
-            <button className="btn btn-info">Info</button>
-            <button className="btn btn-light">Light</button>
-            <button className="btn btn-dark">Dark</button>
+        description: 'Modern button styles with hover effects',
+        component: <BootstrapStyles>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <button className="btn btn-primary">Primary Button</button>
+              <button className="btn btn-secondary">Secondary Button</button>
+              <button className="btn btn-success">Success Button</button>
+              <button className="btn btn-danger">Danger Button</button>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <button className="btn btn-outline-primary">Outline Primary</button>
+              <button className="btn btn-outline-secondary">Outline Secondary</button>
+              <button className="btn btn-outline-success">Outline Success</button>
+              <button className="btn btn-outline-danger">Outline Danger</button>
+            </Box>
           </Box>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <button className="btn btn-outline-primary">Primary</button>
-            <button className="btn btn-outline-secondary">Secondary</button>
-            <button className="btn btn-outline-success">Success</button>
-            <button className="btn btn-outline-danger">Danger</button>
-            <button className="btn btn-outline-warning">Warning</button>
-            <button className="btn btn-outline-info">Info</button>
-            <button className="btn btn-outline-light">Light</button>
-            <button className="btn btn-outline-dark">Dark</button>
-          </Box>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <button className="btn btn-primary btn-lg">Large button</button>
-            <button className="btn btn-secondary btn-lg">Large button</button>
-            <button className="btn btn-primary btn-sm">Small button</button>
-            <button className="btn btn-secondary btn-sm">Small button</button>
-          </Box>
-        </Box>,
+        </BootstrapStyles>,
         code: `<!-- Solid buttons -->
-<button class="btn btn-primary">Primary</button>
-<button class="btn btn-secondary">Secondary</button>
-<button class="btn btn-success">Success</button>
-<button class="btn btn-danger">Danger</button>
-<button class="btn btn-warning">Warning</button>
-<button class="btn btn-info">Info</button>
-<button class="btn btn-light">Light</button>
-<button class="btn btn-dark">Dark</button>
+<button class="btn btn-primary">Primary Button</button>
+<button class="btn btn-secondary">Secondary Button</button>
+<button class="btn btn-success">Success Button</button>
+<button class="btn btn-danger">Danger Button</button>
 
 <!-- Outline buttons -->
-<button class="btn btn-outline-primary">Primary</button>
-<button class="btn btn-outline-secondary">Secondary</button>
-<button class="btn btn-outline-success">Success</button>
-<button class="btn btn-outline-danger">Danger</button>
-<button class="btn btn-outline-warning">Warning</button>
-<button class="btn btn-outline-info">Info</button>
-<button class="btn btn-outline-light">Light</button>
-<button class="btn btn-outline-dark">Dark</button>
-
-<!-- Button sizes -->
-<button class="btn btn-primary btn-lg">Large button</button>
-<button class="btn btn-secondary btn-lg">Large button</button>
-<button class="btn btn-primary btn-sm">Small button</button>
-<button class="btn btn-secondary btn-sm">Small button</button>`,
+<button class="btn btn-outline-primary">Outline Primary</button>
+<button class="btn btn-outline-secondary">Outline Secondary</button>
+<button class="btn btn-outline-success">Outline Success</button>
+<button class="btn btn-outline-danger">Outline Danger</button>`,
       },
       // Bootstrap Alerts
       {
@@ -484,20 +1226,20 @@ const ComponentLibrary = () => {
         component: <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <form>
             <div className="mb-3">
-              <label className="form-label">Email address</label>
+              <label className="form-label" htmlFor="email" >Email address</label>
               <input type="email" className="form-control" placeholder="name@example.com" />
               <div className="form-text">We'll never share your email with anyone else.</div>
             </div>
             <div className="mb-3">
-              <label className="form-label">Password</label>
+              <label className="form-label" htmlFor="password">Password</label>
               <input type="password" className="form-control" />
             </div>
             <div className="mb-3">
-              <label className="form-label">Example textarea</label>
+              <label className="form-label" htmlFor="textarea" >Example textarea</label>
               <textarea className="form-control" rows="3"></textarea>
             </div>
             <div className="mb-3">
-              <label className="form-label">Example select</label>
+              <label className="form-label" htmlFor="example" >Example select</label>
               <select className="form-select">
                 <option>1</option>
                 <option>2</option>
@@ -775,19 +1517,19 @@ const ComponentLibrary = () => {
         component: <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username" >
                 Username
               </label>
               <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" placeholder="Username" />
             </div>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email" >
                 Email
               </label>
               <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="email" placeholder="example@example.com" />
             </div>
             <div className="mb-6">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
                 Password
               </label>
               <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" type="password" placeholder="******************" />
@@ -877,6 +1619,964 @@ const ComponentLibrary = () => {
   <p>Something seriously bad happened.</p>
 </div>`,
       }
+    ],
+    html: [
+      // Modern HTML/CSS Components
+      {
+        id: 'html-buttons',
+        category: 'buttons',
+        title: 'Modern CSS Buttons',
+        description: 'Beautiful button styles with pure CSS',
+        component: <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <ModernButton className="primary">Primary Button</ModernButton>
+            <ModernButton className="secondary">Secondary Button</ModernButton>
+            <ModernButton className="success">Success Button</ModernButton>
+            <ModernButton className="danger">Danger Button</ModernButton>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <ModernButton className="outline">Outline Button</ModernButton>
+            <ModernButton className="gradient">Gradient Button</ModernButton>
+            <ModernButton className="rounded">Rounded Button</ModernButton>
+            <ModernButton className="disabled">Disabled Button</ModernButton>
+          </Box>
+        </Box>,
+        code: `<!-- HTML -->
+<button class="modern-btn primary">Primary Button</button>
+<button class="modern-btn secondary">Secondary Button</button>
+<button class="modern-btn success">Success Button</button>
+<button class="modern-btn danger">Danger Button</button>
+<button class="modern-btn outline">Outline Button</button>
+<button class="modern-btn gradient">Gradient Button</button>
+<button class="modern-btn rounded">Rounded Button</button>
+<button class="modern-btn disabled">Disabled Button</button>
+
+/* CSS */
+.modern-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modern-btn.primary {
+  background: #3B82F6;
+  color: white;
+}
+
+.modern-btn.secondary {
+  background: #6B7280;
+  color: white;
+}
+
+.modern-btn.success {
+  background: #10B981;
+  color: white;
+}
+
+.modern-btn.danger {
+  background: #EF4444;
+  color: white;
+}
+
+.modern-btn.outline {
+  background: transparent;
+  border: 2px solid #3B82F6;
+  color: #3B82F6;
+}
+
+.modern-btn.gradient {
+  background: linear-gradient(45deg, #3B82F6, #8B5CF6);
+  color: white;
+}
+
+.modern-btn.rounded {
+  border-radius: 25px;
+  background: #3B82F6;
+  color: white;
+}
+
+.modern-btn.disabled {
+  background: #E5E7EB;
+  color: #9CA3AF;
+  cursor: not-allowed;
+}
+
+.modern-btn:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}`,
+      },
+      {
+        id: 'html-cards',
+        category: 'layout',
+        title: 'Modern CSS Cards',
+        description: 'Sleek and responsive card designs',
+        component: <CardStyles>
+          <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+            <div className="modern-card">
+              <div className="card-image">
+                <img src="https://source.unsplash.com/300x200/?nature,water" alt="Card" />
+              </div>
+              <div className="card-content">
+                <h3>Explore Nature</h3>
+                <p>Discover the beauty of natural landscapes and serene environments.</p>
+                <button className="card-btn">Learn More</button>
+              </div>
+            </div>
+            <div className="modern-card glass">
+              <div className="card-content">
+                <h3>Premium Features</h3>
+                <p>Access exclusive content and premium features with our Pro plan.</p>
+                <button className="card-btn glass">Upgrade Now</button>
+              </div>
+            </div>
+          </Box>
+        </CardStyles>,
+        code: `<!-- HTML -->
+<div class="modern-card">
+  <div class="card-image">
+    <img src="https://source.unsplash.com/300x200/?nature,water" alt="Card" />
+  </div>
+  <div class="card-content">
+    <h3>Explore Nature</h3>
+    <p>Discover the beauty of natural landscapes and serene environments.</p>
+    <button class="card-btn">Learn More</button>
+  </div>
+</div>
+
+<div class="modern-card glass">
+  <div class="card-content">
+    <h3>Premium Features</h3>
+    <p>Access exclusive content and premium features with our Pro plan.</p>
+    <button class="card-btn glass">Upgrade Now</button>
+  </div>
+</div>
+
+/* CSS */
+.modern-card {
+  width: 300px;
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.modern-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.card-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.modern-card:hover .card-image img {
+  transform: scale(1.1);
+}
+
+.card-content {
+  padding: 20px;
+}
+
+.card-content h3 {
+  margin: 0 0 10px 0;
+  color: #1F2937;
+}
+
+.card-content p {
+  color: #6B7280;
+  margin-bottom: 20px;
+}
+
+.card-btn {
+  padding: 8px 16px;
+  background: #3B82F6;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.card-btn:hover {
+  background: #2563EB;
+}
+
+.modern-card.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modern-card.glass h3 {
+  color: white;
+}
+
+.modern-card.glass p {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.card-btn.glass {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.card-btn.glass:hover {
+  background: rgba(255, 255, 255, 0.3);
+}`,
+      },
+      {
+        id: 'html-forms',
+        category: 'inputs',
+        title: 'Modern CSS Forms',
+        description: 'Beautiful and responsive form controls',
+        component: <FormStyles>
+          <form className="modern-form">
+            <div className="form-group">
+              <input type="text" id="name" className="form-input" placeholder=" " />
+              <label htmlFor="name" className="form-label">Full Name</label>
+            </div>
+            <div className="form-group">
+              <input type="email" id="email" className="form-input" placeholder=" " />
+              <label htmlFor="email" className="form-label">Email Address</label>
+            </div>
+            <div className="form-group">
+              <textarea id="message" className="form-input" placeholder=" " rows="4"></textarea>
+              <label htmlFor="message" className="form-label">Your Message</label>
+            </div>
+            <button type="submit" className="form-button">Send Message</button>
+          </form>
+        </FormStyles>,
+        code: `<!-- HTML -->
+<form class="modern-form">
+  <div class="form-group">
+    <input type="text" id="name" class="form-input" placeholder=" " />
+    <label for="name" class="form-label">Full Name</label>
+  </div>
+  <div class="form-group">
+    <input type="email" id="email" class="form-input" placeholder=" " />
+    <label for="email" class="form-label">Email Address</label>
+  </div>
+  <div class="form-group">
+    <textarea id="message" class="form-input" placeholder=" " rows="4"></textarea>
+    <label for="message" class="form-label">Your Message</label>
+  </div>
+  <button type="submit" class="form-button">Send Message</button>
+</form>
+
+<!-- CSS -->
+<style>
+.modern-form {
+  width: 100%;
+  max-width: 500px;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.form-group {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.form-label {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus + .form-label,
+.form-input:not(:placeholder-shown) + .form-label {
+  transform: translateY(-24px) scale(0.8);
+  color: #3B82F6;
+}
+
+.form-button {
+  width: 100%;
+  padding: 12px;
+  background: #3B82F6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.form-button:hover {
+  background: #2563EB;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Dark theme adjustments */
+@media (prefers-color-scheme: dark) {
+  .form-input {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  
+  .form-input:focus {
+    border-color: #60A5FA;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .modern-form {
+    padding: 1.5rem;
+  }
+  
+  .form-input,
+  .form-button {
+    font-size: 0.875rem;
+  }
+}
+</style>`,
+      },
+      {
+        id: 'html-loaders',
+        category: 'feedback',
+        title: 'CSS Loading Animations',
+        description: 'Modern loading spinners and animations',
+        component: <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          <div className="loader-container">
+            <div className="loader spinner"></div>
+            <p>Spinner</p>
+          </div>
+          <div className="loader-container">
+            <div className="loader pulse"></div>
+            <p>Pulse</p>
+          </div>
+          <div className="loader-container">
+            <div className="loader dots"></div>
+            <p>Dots</p>
+          </div>
+        </Box>,
+        code: `<div class="loader-container">
+  <div class="loader spinner"></div>
+  <p>Spinner</p>
+</div>
+<div class="loader-container">
+  <div class="loader pulse"></div>
+  <p>Pulse</p>
+</div>
+<div class="loader-container">
+  <div class="loader dots"></div>
+  <p>Dots</p>
+</div>
+
+<style>
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.loader-container p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+.loader {
+  width: 40px;
+  height: 40px;
+}
+.spinner {
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-left-color: #3B82F6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+.pulse {
+  background: #3B82F6;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.dots {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.dots::before,
+.dots::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: #3B82F6;
+  border-radius: 50%;
+  animation: dots 1s infinite ease-in-out;
+}
+.dots::after {
+  animationDelay: '0.5s',
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.5; }
+}
+@keyframes dots {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+</style>`,
+      },
+      {
+        id: 'html-navigation',
+        category: 'navigation',
+        title: 'Modern Navigation Menu',
+        description: 'Responsive navigation menu with dropdown',
+        component: <Box sx={{ width: '100%' }}>
+          <nav className="modern-nav">
+            <div className="nav-brand">Logo</div>
+            <ul className="nav-menu">
+              <li><a href="#" className="nav-link">Home</a></li>
+              <li className="dropdown">
+                <a href="#" className="nav-link">Products</a>
+                <ul className="dropdown-menu">
+                  <li><a href="#">Item 1</a></li>
+                  <li><a href="#">Item 2</a></li>
+                  <li><a href="#">Item 3</a></li>
+                </ul>
+              </li>
+              <li><a href="#" className="nav-link">About</a></li>
+              <li><a href="#" className="nav-link">Contact</a></li>
+            </ul>
+          </nav>
+        </Box>,
+        code: `<nav class="modern-nav">
+  <div class="nav-brand">Logo</div>
+  <ul class="nav-menu">
+    <li><a href="#" class="nav-link">Home</a></li>
+    <li class="dropdown">
+      <a href="#" class="nav-link">Products</a>
+      <ul class="dropdown-menu">
+        <li><a href="#">Item 1</a></li>
+        <li><a href="#">Item 2</a></li>
+        <li><a href="#">Item 3</a></li>
+      </ul>
+    </li>
+    <li><a href="#" class="nav-link">About</a></li>
+    <li><a href="#" class="nav-link">Contact</a></li>
+  </ul>
+</nav>`,
+      },
+      {
+        id: 'html-modal',
+        category: 'feedback',
+        title: 'Modal Dialog',
+        description: 'Custom modal dialog with backdrop',
+        component: <Box sx={{ position: 'relative', minHeight: '200px' }}>
+          <button className="modern-btn primary" onClick={() => {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) modal.classList.add('active');
+          }}>
+            Open Modal
+          </button>
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h2>Modal Title</h2>
+                <button className="modal-close" onClick={() => {
+                  const modal = document.querySelector('.modal-overlay');
+                  if (modal) modal.classList.remove('active');
+                }}>×</button>
+              </div>
+              <div className="modal-body">
+                <p>This is the modal content. You can add any content here including forms, images, or other components.</p>
+              </div>
+              <div className="modal-footer">
+                <button className="modern-btn outline" onClick={() => {
+                  const modal = document.querySelector('.modal-overlay');
+                  if (modal) modal.classList.remove('active');
+                }}>Cancel</button>
+                <button className="modern-btn primary">Confirm</button>
+              </div>
+            </div>
+          </div>
+        </Box>,
+        code: `<button class="modern-btn primary" onclick="openModal()">
+  Open Modal
+</button>
+
+<div class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Modal Title</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>This is the modal content. You can add any content here including forms, images, or other components.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="modern-btn outline" onclick="closeModal()">Cancel</button>
+      <button class="modern-btn primary">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal() {
+  document.querySelector('.modal-overlay').classList.add('active');
+}
+
+function closeModal() {
+  document.querySelector('.modal-overlay').classList.remove('active');
+}
+</script>`,
+      },
+      {
+        id: 'html-tooltip',
+        category: 'feedback',
+        title: 'Custom Tooltips',
+        description: 'Pure CSS tooltips with different positions',
+        component: <TooltipStyles>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', padding: '2rem' }}>
+            <button className="tooltip-btn" data-tooltip="Tooltip Top">
+              Hover Me (Top)
+            </button>
+            <button className="tooltip-btn" data-tooltip="Tooltip Bottom" data-position="bottom">
+              Hover Me (Bottom)
+            </button>
+            <button className="tooltip-btn" data-tooltip="Tooltip Left" data-position="left">
+              Hover Me (Left)
+            </button>
+            <button className="tooltip-btn" data-tooltip="Tooltip Right" data-position="right">
+              Hover Me (Right)
+            </button>
+          </Box>
+        </TooltipStyles>,
+        code: `<button class="tooltip-btn" data-tooltip="Tooltip Top">
+  Hover Me (Top)
+</button>
+<button class="tooltip-btn" data-tooltip="Tooltip Bottom" data-position="bottom">
+  Hover Me (Bottom)
+</button>
+<button class="tooltip-btn" data-tooltip="Tooltip Left" data-position="left">
+  Hover Me (Left)
+</button>
+<button class="tooltip-btn" data-tooltip="Tooltip Right" data-position="right">
+  Hover Me (Right)
+</button>`,
+      },
+      // Add these new components to the HTML section
+      {
+        id: 'html-progress',
+        category: 'feedback',
+        title: 'Progress Bars',
+        description: 'Animated progress indicators with different styles',
+        component: <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, width: '100%' }}>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: '75%' }}>75%</div>
+          </div>
+          <div className="progress-bar striped">
+            <div className="progress-fill" style={{ width: '60%' }}>60%</div>
+          </div>
+          <div className="progress-bar gradient">
+            <div className="progress-fill" style={{ width: '90%' }}>90%</div>
+          </div>
+          <div className="progress-steps">
+            <div className="step completed">1</div>
+            <div className="step completed">2</div>
+            <div className="step active">3</div>
+            <div className="step">4</div>
+          </div>
+        </Box>,
+        code: `<div class="progress-bar">
+  <div class="progress-fill" style="width: 75%">75%</div>
+</div>
+
+<div class="progress-bar striped">
+  <div class="progress-fill" style="width: 60%">60%</div>
+</div>
+
+<div class="progress-bar gradient">
+  <div class="progress-fill" style="width: 90%">90%</div>
+</div>
+
+<div class="progress-steps">
+  <div class="step completed">1</div>
+  <div class="step completed">2</div>
+  <div class="step active">3</div>
+  <div class="step">4</div>
+</div>
+
+<style>
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #3B82F6;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+}
+
+.progress-bar.striped .progress-fill {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 20px 20px;
+  animation: progress-stripes 1s linear infinite;
+}
+
+.progress-bar.gradient .progress-fill {
+  background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 10px;
+}
+
+.step {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  position: relative;
+}
+
+.step::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.step:last-child::after {
+  display: none;
+}
+
+.step.completed {
+  background: #10B981;
+}
+
+.step.active {
+  background: #3B82F6;
+}
+
+@keyframes progress-stripes {
+  0% { background-position: 0 0; }
+  100% { background-position: 20px 0; }
+}
+</style>`,
+      },
+      {
+        id: 'html-accordion',
+        category: 'layout',
+        title: 'Accordion',
+        description: 'Collapsible content sections',
+        component: <Box sx={{ width: '100%' }}>
+          <div className="accordion">
+            <div className="accordion-item">
+              <button className="accordion-header">
+                Section 1
+                <span className="accordion-icon">+</span>
+              </button>
+              <div className="accordion-content">
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+              </div>
+            </div>
+            <div className="accordion-item">
+              <button className="accordion-header">
+                Section 2
+                <span className="accordion-icon">+</span>
+              </button>
+              <div className="accordion-content">
+                <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+              </div>
+            </div>
+            <div className="accordion-item">
+              <button className="accordion-header">
+                Section 3
+                <span className="accordion-icon">+</span>
+              </button>
+              <div className="accordion-content">
+                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+              </div>
+            </div>
+          </div>
+        </Box>,
+        code: `<div class="accordion">
+  <div class="accordion-item">
+    <button class="accordion-header">
+      Section 1
+      <span class="accordion-icon">+</span>
+    </button>
+    <div class="accordion-content">
+      <p>Lorem ipsum dolor sit amet...</p>
+    </div>
+  </div>
+  <!-- More accordion items -->
+</div>
+
+<style>
+.accordion {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.accordion-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.accordion-header {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  text-align: left;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.accordion-header:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.accordion-icon {
+  transition: transform 0.3s ease;
+}
+
+.accordion-item.active .accordion-icon {
+  transform: rotate(45deg);
+}
+
+.accordion-content {
+  padding: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.accordion-item.active .accordion-content {
+  padding: 1rem;
+  max-height: 200px;
+}
+
+.accordion-content p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+</style>
+
+<script>
+document.querySelectorAll('.accordion-header').forEach(button => {
+  button.addEventListener('click', () => {
+    const accordionItem = button.parentElement;
+    accordionItem.classList.toggle('active');
+  });
+});
+</script>`,
+      },
+      {
+        id: 'html-pricing',
+        category: 'layout',
+        title: 'Pricing Tables',
+        description: 'Modern pricing plan comparison tables',
+        component: <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div className="pricing-card">
+            <div className="pricing-header">
+              <h3>Basic</h3>
+              <div className="price">
+                <span className="currency">$</span>
+                <span className="amount">9</span>
+                <span className="period">/month</span>
+              </div>
+            </div>
+            <ul className="pricing-features">
+              <li>✓ 10 Projects</li>
+              <li>✓ 5GB Storage</li>
+              <li>✓ Basic Support</li>
+              <li className="disabled">✗ API Access</li>
+              <li className="disabled">✗ Custom Domain</li>
+            </ul>
+            <button className="pricing-btn">Choose Plan</button>
+          </div>
+          <div className="pricing-card popular">
+            <div className="popular-badge">Popular</div>
+            <div className="pricing-header">
+              <h3>Pro</h3>
+              <div className="price">
+                <span className="currency">$</span>
+                <span className="amount">29</span>
+                <span className="period">/month</span>
+              </div>
+            </div>
+            <ul className="pricing-features">
+              <li>✓ Unlimited Projects</li>
+              <li>✓ 50GB Storage</li>
+              <li>✓ Priority Support</li>
+              <li>✓ API Access</li>
+              <li>✓ Custom Domain</li>
+            </ul>
+            <button className="pricing-btn">Choose Plan</button>
+          </div>
+        </Box>,
+        code: `<div class="pricing-card">
+  <div class="pricing-header">
+    <h3>Basic</h3>
+    <div class="price">
+      <span class="currency">$</span>
+      <span class="amount">9</span>
+      <span class="period">/month</span>
+    </div>
+  </div>
+  <ul class="pricing-features">
+    <li>✓ 10 Projects</li>
+    <li>✓ 5GB Storage</li>
+    <li>✓ Basic Support</li>
+    <li class="disabled">✗ API Access</li>
+    <li class="disabled">✗ Custom Domain</li>
+  </ul>
+  <button class="pricing-btn">Choose Plan</button>
+</div>
+
+<div class="pricing-card popular">
+  <div class="popular-badge">Popular</div>
+  <div class="pricing-header">
+    <h3>Pro</h3>
+    <div class="price">
+      <span class="currency">$</span>
+      <span class="amount">29</span>
+      <span class="period">/month</span>
+    </div>
+  </div>
+  <ul class="pricing-features">
+    <li>✓ Unlimited Projects</li>
+    <li>✓ 50GB Storage</li>
+    <li>✓ Priority Support</li>
+    <li>✓ API Access</li>
+    <li>✓ Custom Domain</li>
+  </ul>
+  <button class="pricing-btn">Choose Plan</button>
+</div>`,
+      },
+      {
+        id: 'html-social',
+        category: 'buttons',
+        title: 'Social Media Buttons',
+        description: 'Stylish social media sharing buttons',
+        component: <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <button className="social-btn facebook">
+            <i className="fab fa-facebook-f"></i>
+            Facebook
+          </button>
+          <button className="social-btn twitter">
+            <i className="fab fa-twitter"></i>
+            Twitter
+          </button>
+          <button className="social-btn linkedin">
+            <i className="fab fa-linkedin-in"></i>
+            LinkedIn
+          </button>
+          <button className="social-btn github">
+            <i className="fab fa-github"></i>
+            GitHub
+          </button>
+          <button className="social-btn instagram">
+            <i className="fab fa-instagram"></i>
+            Instagram
+          </button>
+        </Box>,
+        code: `<!-- Include Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<button class="social-btn facebook">
+  <i class="fab fa-facebook-f"></i>
+  Facebook
+</button>
+<button class="social-btn twitter">
+  <i class="fab fa-twitter"></i>
+  Twitter
+</button>
+<button class="social-btn linkedin">
+  <i class="fab fa-linkedin-in"></i>
+  LinkedIn
+</button>
+<button class="social-btn github">
+  <i class="fab fa-github"></i>
+  GitHub
+</button>
+<button class="social-btn instagram">
+  <i class="fab fa-instagram"></i>
+  Instagram
+</button>`,
+      }
     ]
   };
 
@@ -911,220 +2611,224 @@ const ComponentLibrary = () => {
     return matchesCategory && matchesSearch;
   });
 
+  // Add Global styles
   return (
-    <Box sx={{ 
-      minHeight: '100vh',
-      background: 'linear-gradient(to bottom, #0F172A, #1E293B)',
-      color: 'white',
-      px: 3,
-      pt: { xs: '84px', sm: '88px' }, // Account for navbar height
-      pb: 6,
-      position: 'relative'
-    }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h3" sx={{ 
-          fontWeight: 800,
-          mb: 2,
-          background: 'linear-gradient(45deg, #3B82F6, #EC4899)',
-          backgroundClip: 'text',
-          textFillColor: 'transparent',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-        }}>
-          Component Library
-        </Typography>
-        <Typography variant="h6" sx={{ color: alpha('#fff', 0.7) }}>
-          Explore and use pre-built components from popular frameworks
-        </Typography>
-      </Box>
-
-      {/* Framework Selection */}
-      <Paper sx={{ 
-        mb: 3,
-        background: alpha('#1E293B', 0.5),
-        backdropFilter: 'blur(10px)',
-        borderRadius: 3,
-        border: `1px solid ${alpha('#fff', 0.1)}`,
-        p: 2
-      }}>
-        <Grid container spacing={2}>
-          {frameworks.map(framework => (
-            <Grid item key={framework.id}>
-              <Button 
-                variant={selectedFramework === framework.id ? "contained" : "outlined"}
-                onClick={() => handleFrameworkChange(framework.id)}
-                sx={{
-                  borderColor: alpha('#fff', 0.2),
-                  color: selectedFramework === framework.id ? 'white' : alpha('#fff', 0.7),
-                  backgroundColor: selectedFramework === framework.id ? '#3B82F6' : 'transparent',
-                  '&:hover': {
-                    borderColor: '#3B82F6',
-                    backgroundColor: selectedFramework === framework.id ? '#2563EB' : alpha('#3B82F6', 0.1),
-                  }
-                }}
-              >
-                {framework.name}
-              </Button>
-            </Grid>
-          ))}
-        </Grid>
-      </Paper>
-
-      {/* Search and Categories */}
+    <>
+      <Global styles={globalStyles} />
       <Box sx={{ 
-        display: 'flex', 
-        gap: 2, 
-        mb: 4,
-        flexWrap: 'wrap'
+        minHeight: '100vh',
+        background: 'linear-gradient(to bottom, #0F172A, #1E293B)',
+        color: 'white',
+        px: 3,
+        pt: { xs: '84px', sm: '88px' }, // Account for navbar height
+        pb: 6,
+        position: 'relative'
       }}>
-        <TextField
-          placeholder="Search components..."
-          value={searchQuery}
-          onChange={handleSearch}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ mr: 1, color: alpha('#fff', 0.5) }} />,
-          }}
-          sx={{
-            flex: 1,
-            minWidth: 300,
-            '& .MuiOutlinedInput-root': {
-              color: 'white',
-              backgroundColor: alpha('#1E293B', 0.5),
-              backdropFilter: 'blur(10px)',
-              borderRadius: 2,
-              '& fieldset': {
-                borderColor: alpha('#fff', 0.1),
-              },
-              '&:hover fieldset': {
-                borderColor: alpha('#fff', 0.2),
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: '#3B82F6',
-              },
-            },
-          }}
-        />
-        
+        {/* Header */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h3" sx={{ 
+            fontWeight: 800,
+            mb: 2,
+            background: 'linear-gradient(45deg, #3B82F6, #EC4899)',
+            backgroundClip: 'text',
+            textFillColor: 'transparent',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}>
+            Component Library
+          </Typography>
+          <Typography variant="h6" sx={{ color: alpha('#fff', 0.7) }}>
+            Explore and use pre-built components from popular frameworks
+          </Typography>
+        </Box>
+
+        {/* Framework Selection */}
+        <Paper sx={{ 
+          mb: 3,
+          background: alpha('#1E293B', 0.5),
+          backdropFilter: 'blur(10px)',
+          borderRadius: 3,
+          border: `1px solid ${alpha('#fff', 0.1)}`,
+          p: 2
+        }}>
+          <Grid container spacing={2}>
+            {frameworks.map(framework => (
+              <Grid item key={framework.id}>
+                <Button 
+                  variant={selectedFramework === framework.id ? "contained" : "outlined"}
+                  onClick={() => handleFrameworkChange(framework.id)}
+                  sx={{
+                    borderColor: alpha('#fff', 0.2),
+                    color: selectedFramework === framework.id ? 'white' : alpha('#fff', 0.7),
+                    backgroundColor: selectedFramework === framework.id ? '#3B82F6' : 'transparent',
+                    '&:hover': {
+                      borderColor: '#3B82F6',
+                      backgroundColor: selectedFramework === framework.id ? '#2563EB' : alpha('#3B82F6', 0.1),
+                    }
+                  }}
+                >
+                  {framework.name}
+                </Button>
+              </Grid>
+            ))}
+          </Grid>
+        </Paper>
+
+        {/* Search and Categories */}
         <Box sx={{ 
           display: 'flex', 
-          gap: 1, 
-          flexWrap: 'wrap',
-          alignItems: 'center'
+          gap: 2, 
+          mb: 4,
+          flexWrap: 'wrap'
         }}>
-          {categories.map(category => (
-            <Chip
-              key={category.id}
-              label={category.name}
-              onClick={() => handleCategoryChange(category.id)}
-              sx={{
-                backgroundColor: selectedCategory === category.id ? '#3B82F6' : alpha('#1E293B', 0.5),
+          <TextField
+            placeholder="Search components..."
+            value={searchQuery}
+            onChange={handleSearch}
+            InputProps={{
+              startAdornment: <SearchIcon sx={{ mr: 1, color: alpha('#fff', 0.5) }} />,
+            }}
+            sx={{
+              flex: 1,
+              minWidth: 300,
+              '& .MuiOutlinedInput-root': {
                 color: 'white',
-                border: `1px solid ${selectedCategory === category.id ? '#3B82F6' : alpha('#fff', 0.1)}`,
-                '&:hover': {
-                  backgroundColor: selectedCategory === category.id ? '#2563EB' : alpha('#1E293B', 0.8),
-                }
-              }}
-            />
-          ))}
+                backgroundColor: alpha('#1E293B', 0.5),
+                backdropFilter: 'blur(10px)',
+                borderRadius: 2,
+                '& fieldset': {
+                  borderColor: alpha('#fff', 0.1),
+                },
+                '&:hover fieldset': {
+                  borderColor: alpha('#fff', 0.2),
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#3B82F6',
+                },
+              },
+            }}
+          />
+          
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 1, 
+            flexWrap: 'wrap',
+            alignItems: 'center'
+          }}>
+            {categories.map(category => (
+              <Chip
+                key={category.id}
+                label={category.name}
+                onClick={() => handleCategoryChange(category.id)}
+                sx={{
+                  backgroundColor: selectedCategory === category.id ? '#3B82F6' : alpha('#1E293B', 0.5),
+                  color: 'white',
+                  border: `1px solid ${selectedCategory === category.id ? '#3B82F6' : alpha('#fff', 0.1)}`,
+                  '&:hover': {
+                    backgroundColor: selectedCategory === category.id ? '#2563EB' : alpha('#1E293B', 0.8),
+                  }
+                }}
+              />
+            ))}
+          </Box>
         </Box>
-      </Box>
 
-      {/* Components Grid */}
-      <Grid container spacing={3}>
-        {filteredComponents.map((component) => (
-          <Grid item xs={12} md={6} lg={4} key={component.id}>
-            <Card sx={{ 
-              height: '100%',
-              background: alpha('#1E293B', 0.5),
-              backdropFilter: 'blur(10px)',
-              borderRadius: 3,
-              border: `1px solid ${alpha('#fff', 0.1)}`,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 8px 25px rgba(59, 130, 246, 0.2)',
-                borderColor: alpha('#3B82F6', 0.5)
-              }
-            }}>
-              <CardContent>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
-                    {component.title}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: alpha('#fff', 0.7) }}>
-                    {component.description}
-                  </Typography>
-                </Box>
+        {/* Components Grid */}
+        <Grid container spacing={3}>
+          {filteredComponents.map((component) => (
+            <Grid item xs={12} md={6} lg={4} key={component.id}>
+              <Card sx={{ 
+                height: '100%',
+                background: alpha('#1E293B', 0.5),
+                backdropFilter: 'blur(10px)',
+                borderRadius: 3,
+                border: `1px solid ${alpha('#fff', 0.1)}`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 25px rgba(59, 130, 246, 0.2)',
+                  borderColor: alpha('#3B82F6', 0.5)
+                }
+              }}>
+                <CardContent>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
+                      {component.title}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: alpha('#fff', 0.7) }}>
+                      {component.description}
+                    </Typography>
+                  </Box>
 
-                <Box sx={{ 
-                  p: 3, 
-                  mb: 2,
-                  backgroundColor: alpha('#0F172A', 0.5),
-                  borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  {component.component}
-                </Box>
+                  <Box sx={{ 
+                    p: 3, 
+                    mb: 2,
+                    backgroundColor: alpha('#0F172A', 0.5),
+                    borderRadius: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {component.component}
+                  </Box>
 
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button
-                    startIcon={<CodeIcon />}
-                    onClick={() => toggleCode(component.id)}
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      borderColor: alpha('#fff', 0.2),
-                      color: 'white',
-                      '&:hover': {
-                        borderColor: '#3B82F6',
-                        backgroundColor: alpha('#3B82F6', 0.1),
-                      }
-                    }}
-                  >
-                    {showCode[component.id] ? 'Hide Code' : 'View Code'}
-                  </Button>
-                  <Tooltip title="Copy code">
-                    <IconButton 
-                      onClick={() => copyCode(component.code)}
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button
+                      startIcon={<CodeIcon />}
+                      onClick={() => toggleCode(component.id)}
+                      variant="outlined"
                       size="small"
-                      sx={{ 
-                        color: alpha('#fff', 0.7),
+                      sx={{
+                        borderColor: alpha('#fff', 0.2),
+                        color: 'white',
                         '&:hover': {
-                          color: '#3B82F6',
+                          borderColor: '#3B82F6',
                           backgroundColor: alpha('#3B82F6', 0.1),
                         }
                       }}
                     >
-                      <ContentCopyIcon />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-
-                {showCode[component.id] && (
-                  <Box sx={{ mt: 2 }}>
-                    <SyntaxHighlighter
-                      language="jsx"
-                      style={atomDark}
-                      customStyle={{
-                        margin: 0,
-                        borderRadius: 8,
-                        maxHeight: 200,
-                        overflow: 'auto'
-                      }}
-                    >
-                      {component.code}
-                    </SyntaxHighlighter>
+                      {showCode[component.id] ? 'Hide Code' : 'View Code'}
+                    </Button>
+                    <Tooltip title="Copy code">
+                      <IconButton 
+                        onClick={() => copyCode(component.code)}
+                        size="small"
+                        sx={{ 
+                          color: alpha('#fff', 0.7),
+                          '&:hover': {
+                            color: '#3B82F6',
+                            backgroundColor: alpha('#3B82F6', 0.1),
+                          }
+                        }}
+                      >
+                        <ContentCopyIcon />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+
+                  {showCode[component.id] && (
+                    <Box sx={{ mt: 2 }}>
+                      <SyntaxHighlighter
+                        language="jsx"
+                        style={atomDark}
+                        customStyle={{
+                          margin: 0,
+                          borderRadius: 8,
+                          maxHeight: 200,
+                          overflow: 'auto'
+                        }}
+                      >
+                        {component.code}
+                      </SyntaxHighlighter>
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+    </>
   );
 };
 
