@@ -2,26 +2,20 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
+// Enable pre-flight for all routes
+app.options('*', cors());
+
 app.use(cors({
-  origin: true, // Allow all origins temporarily for testing
+  origin: [
+    'https://your-netlify-app-name.netlify.app',
+    'http://localhost:3000'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With', 'Access-Control-Allow-Origin'],
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-// Add headers middleware
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
+// Express body parser
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 module.exports = app;
-
