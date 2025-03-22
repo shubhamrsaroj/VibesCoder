@@ -1,6 +1,6 @@
 [build]
   base = "/"
-  command = "cd client && CI=false npm install --legacy-peer-deps && npm run build"
+  command = "cd client && npm install --legacy-peer-deps && npm run build"
   publish = "client/build"
   functions = "server"
 
@@ -10,17 +10,10 @@
   DISABLE_ESLINT_PLUGIN = "true"
   SKIP_PREFLIGHT_CHECK = "true"
   NODE_VERSION = "18"
-  REACT_APP_API_URL = "https://vibescoder.onrender.com"
-
-[dev]
-  command = "npm run start"
-  port = 8888
-  targetPort = 3000
-  functions = "server"
 
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  to = "/.netlify/functions/api/:splat"
   status = 200
 
 [[redirects]]
