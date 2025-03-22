@@ -14,10 +14,18 @@ const app = express();
 
 // Enable CORS for all routes
 app.use(cors({
-  origin: true, // This allows all origins
+  origin: [
+    'https://peppy-snickerdoodle-ccc36f.netlify.app',
+    'https://67deb2b76b506032e2402b96--peppy-snickerdoodle-ccc36f.netlify.app',
+    'https://vibescoder.onrender.com',
+    'http://localhost:3000',
+    'http://localhost:5000'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'Cookie'],
+  exposedHeaders: ['x-auth-token'],
+  optionsSuccessStatus: 200
 }));
 
 // Enable pre-flight requests for all routes
@@ -26,9 +34,16 @@ app.options('*', cors());
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: '*', // Allow all origins for Socket.IO
+    origin: [
+      'https://peppy-snickerdoodle-ccc36f.netlify.app',
+      'https://67deb2b76b506032e2402b96--peppy-snickerdoodle-ccc36f.netlify.app',
+      'https://vibescoder.onrender.com',
+      'http://localhost:3000',
+      'http://localhost:5000'
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    credentials: true
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'Cookie']
   }
 });
 
