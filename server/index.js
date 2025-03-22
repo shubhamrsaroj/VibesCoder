@@ -5,7 +5,6 @@ const dotenv = require('dotenv');
 const path = require('path');
 const http = require('http');
 const socketIo = require('socket.io');
-const serverless = require('serverless-http');
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -25,10 +24,12 @@ const io = socketIo(server, {
   cors: {
     origin: [
       'https://peppy-snickerdoodle-ccc36f.netlify.app',
+      'https://67deb2b76b506032e2402b96--peppy-snickerdoodle-ccc36f.netlify.app',
       'http://localhost:3000',
+      'https://accounts.spotify.com',
       'https://vibescoder.onrender.com'
     ],
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     credentials: true
   }
 });
@@ -37,11 +38,12 @@ const io = socketIo(server, {
 app.use(cors({
   origin: [
     'https://peppy-snickerdoodle-ccc36f.netlify.app',
+    'https://67deb2b76b506032e2402b96--peppy-snickerdoodle-ccc36f.netlify.app',
     'http://localhost:3000',
     'https://accounts.spotify.com',
     'https://vibescoder.onrender.com'
   ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'x-auth-token'],
   credentials: true,
   optionsSuccessStatus: 200
@@ -62,12 +64,12 @@ mongoose.connect(process.env.MONGODB_URI, {
 .catch(err => console.error('MongoDB connection error:', err));
 
 // API Routes
-app.use('/api', authRoutes);
-app.use('/api', projectRoutes);
-app.use('/api', compilerRoutes);
-app.use('/api', spotifyRoutes);
-app.use('/api', aiRoutes);
-app.use('/api', componentRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/compiler', compilerRoutes);
+app.use('/api/spotify', spotifyRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/components', componentRoutes);
 
 // Socket.io for real-time collaboration
 io.on('connection', (socket) => {
@@ -106,15 +108,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server if not in serverless environment
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 5000;
-  server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log('Environment:', process.env.NODE_ENV);
-  });
-}
+// Start server
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log('Environment:', process.env.NODE_ENV);
+});
 
-// Export for serverless
+// Export app for testing purposes
 module.exports = app;
-module.exports.handler = serverless(app);
