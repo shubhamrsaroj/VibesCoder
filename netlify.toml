@@ -1,7 +1,8 @@
 [build]
-  base = "/"
-  command = "cd client && npm install --legacy-peer-deps && DISABLE_ESLINT_PLUGIN=true CI=false npm run build"
-  publish = "client/build"
+  base = "client"
+  command = "npm install --legacy-peer-deps && DISABLE_ESLINT_PLUGIN=true CI=false npm run build"
+  publish = "build"
+  functions = "false"
 
 [build.environment]
   CI = "false"
