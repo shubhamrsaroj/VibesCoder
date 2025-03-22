@@ -3,7 +3,8 @@ const SPOTIFY_AUTH_BASE = 'https://accounts.spotify.com';
 
 // Get these from your environment variables
 const SPOTIFY_CLIENT_ID = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
-const REDIRECT_URI = 'http://localhost:5000/api/spotify/callback';
+const BACKEND_URL = process.env.REACT_APP_API_URL || 'https://vibescoder.onrender.com';
+const REDIRECT_URI = `${BACKEND_URL}/api/spotify/callback`;
 
 // Helper function to get headers
 const getHeaders = (token) => ({
@@ -19,7 +20,7 @@ const refreshAccessToken = async () => {
       throw new Error('No refresh token available');
     }
 
-    const response = await fetch('http://localhost:5000/api/spotify/refresh_token', {
+    const response = await fetch(`${BACKEND_URL}/api/spotify/refresh_token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -96,7 +97,7 @@ export const loginToSpotify = async () => {
     }
     testPopup.close();
     
-    const response = await fetch('http://localhost:5000/api/spotify/login');
+    const response = await fetch(`${BACKEND_URL}/api/spotify/login`);
     const data = await response.json();
     
     if (data.authUrl) {
@@ -174,7 +175,7 @@ export const loginToSpotify = async () => {
 
 export const getCurrentTrack = async (token) => {
   try {
-    const response = await fetch('http://localhost:5000/api/spotify/now-playing', {
+    const response = await fetch(`${BACKEND_URL}/api/spotify/now-playing`, {
       headers: getHeaders(token)
     });
     return handleResponse(response);
@@ -186,7 +187,7 @@ export const getCurrentTrack = async (token) => {
 
 export const playTrack = async (token, options = {}) => {
   try {
-    const response = await fetch('http://localhost:5000/api/spotify/play', {
+    const response = await fetch(`${BACKEND_URL}/api/spotify/play`, {
       method: 'PUT',
       headers: getHeaders(token),
       body: JSON.stringify(options)
@@ -200,7 +201,7 @@ export const playTrack = async (token, options = {}) => {
 
 export const pauseTrack = async (token) => {
   try {
-    const response = await fetch('http://localhost:5000/api/spotify/pause', {
+    const response = await fetch(`${BACKEND_URL}/api/spotify/pause`, {
       method: 'PUT',
       headers: getHeaders(token)
     });
@@ -213,7 +214,7 @@ export const pauseTrack = async (token) => {
 
 export const nextTrack = async (token) => {
   try {
-    const response = await fetch('http://localhost:5000/api/spotify/next', {
+    const response = await fetch(`${BACKEND_URL}/api/spotify/next`, {
       method: 'POST',
       headers: getHeaders(token)
     });
@@ -226,7 +227,7 @@ export const nextTrack = async (token) => {
 
 export const previousTrack = async (token) => {
   try {
-    const response = await fetch('http://localhost:5000/api/spotify/previous', {
+    const response = await fetch(`${BACKEND_URL}/api/spotify/previous`, {
       method: 'POST',
       headers: getHeaders(token)
     });
@@ -239,7 +240,7 @@ export const previousTrack = async (token) => {
 
 export const searchTracks = async (token, query) => {
   try {
-    const response = await fetch(`http://localhost:5000/api/spotify/search?q=${encodeURIComponent(query)}`, {
+    const response = await fetch(`${BACKEND_URL}/api/spotify/search?q=${encodeURIComponent(query)}`, {
       headers: getHeaders(token)
     });
     return handleResponse(response);
@@ -251,7 +252,7 @@ export const searchTracks = async (token, query) => {
 
 export const getUserPlaylists = async (token) => {
   try {
-    const response = await fetch('http://localhost:5000/api/spotify/playlists', {
+    const response = await fetch(`${BACKEND_URL}/api/spotify/playlists`, {
       headers: getHeaders(token)
     });
     return handleResponse(response);
@@ -263,7 +264,7 @@ export const getUserPlaylists = async (token) => {
 
 export const getPlaylistTracks = async (token, playlistId) => {
   try {
-    const response = await fetch(`http://localhost:5000/api/spotify/playlists/${playlistId}/tracks`, {
+    const response = await fetch(`${BACKEND_URL}/api/spotify/playlists/${playlistId}/tracks`, {
       headers: getHeaders(token)
     });
     return handleResponse(response);
