@@ -44,6 +44,18 @@ import {
   playPlaylistTrack
 } from '../services/spotifyService';
 
+// Import API URL from config
+import { API_URL } from '../config';
+
+// Define BACKEND_URL to use the API_URL from config
+const BACKEND_URL = API_URL;
+
+// Helper function to get headers
+const getHeaders = (token) => ({
+  'Authorization': `Bearer ${token}`,
+  'Content-Type': 'application/json'
+});
+
 const MusicPlayer = ({ open, onClose, anchorEl }) => {
   const [currentTrack, setCurrentTrack] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
