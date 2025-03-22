@@ -1,14 +1,35 @@
 {
-  "name": "vibe-coder",
+  "name": "vibes-coder",
   "version": "1.0.0",
-  "private": true,
-  "workspaces": [
-    "client",
-    "server"
-  ],
+  "description": "VibesCoder - Full Stack Development Platform",
   "scripts": {
-    "start": "cd client && npm start",
+    "start": "node server/index.js",
+    "server": "nodemon server/index.js",
+    "client": "cd client && npm start",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
     "build": "cd client && npm install --legacy-peer-deps && npm run build",
-    "server": "cd server && npm start"
+    "install-client": "cd client && npm install --legacy-peer-deps",
+    "install-server": "cd server && npm install",
+    "install-all": "npm install && npm run install-server && npm run install-client"
+  },
+  "keywords": [
+    "react",
+    "nodejs",
+    "mongodb",
+    "express",
+    "development",
+    "platform"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^8.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }
