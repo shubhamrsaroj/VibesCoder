@@ -1,6 +1,6 @@
 [build]
   base = "/"
-  command = "cd client && npm install --legacy-peer-deps && CI=false npm run build"
+  command = "cd client && npm install --legacy-peer-deps && DISABLE_ESLINT_PLUGIN=true CI=false npm run build"
   publish = "client/build"
 
 [build.environment]
@@ -8,7 +8,7 @@
   NODE_ENV = "production"
   DISABLE_ESLINT_PLUGIN = "true"
   SKIP_PREFLIGHT_CHECK = "true"
-  NODE_VERSION = "20"
+  NODE_VERSION = "18"
   REACT_APP_API_URL = "https://vibescoder.onrender.com"
   REACT_APP_SPOTIFY_CLIENT_ID = "68386b523e61463d83af9d061eed95dc"
 
