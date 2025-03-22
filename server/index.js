@@ -6,6 +6,36 @@ const path = require('path');
 const http = require('http');
 const socketIo = require('socket.io');
 
+// Load environment variables
+dotenv.config();
+
+// Initialize Express app
+const app = express();
+
+// Enable CORS for all routes
+app.use(cors({
+  origin: true, // This allows all origins
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+}));
+
+// Enable pre-flight requests for all routes
+app.options('*', cors());
+
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: '*', // Allow all origins for Socket.IO
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    credentials: true
+  }
+});
+
+// Body parser middleware
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
 // Routes
 const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/projects');
@@ -13,47 +43,6 @@ const compilerRoutes = require('./routes/compiler');
 const spotifyRoutes = require('./routes/spotify');
 const aiRoutes = require('./routes/ai');
 const componentRoutes = require('./routes/components');
-
-// Load environment variables
-dotenv.config();
-
-// Initialize Express app
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: [
-      'https://peppy-snickerdoodle-ccc36f.netlify.app',
-      'https://67deb2b76b506032e2402b96--peppy-snickerdoodle-ccc36f.netlify.app',
-      'http://localhost:3000',
-      'https://accounts.spotify.com',
-      'https://vibescoder.onrender.com'
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    credentials: true
-  }
-});
-
-// Middleware
-app.use(cors({
-  origin: [
-    'https://peppy-snickerdoodle-ccc36f.netlify.app',
-    'https://67deb2b76b506032e2402b96--peppy-snickerdoodle-ccc36f.netlify.app',
-    'http://localhost:3000',
-    'https://accounts.spotify.com',
-    'https://vibescoder.onrender.com'
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'x-auth-token'],
-  credentials: true,
-  optionsSuccessStatus: 200
-}));
-
-// Enable pre-flight requests for all routes
-app.options('*', cors());
-
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, {
