@@ -448,11 +448,26 @@ const MusicPlayer = ({ open, onClose, anchorEl }) => {
 
   const handleVolumeChange = async (event, newValue) => {
     try {
-      if (!player) return;
-      await player.setVolume(newValue / 100);
-      setVolume(newValue);
+      setVolume(newValue); // Always update local state immediately for UI responsiveness
+      
+      // If we have a player object from SDK, use it to control volume
+      if (player) {
+        try {
+          await player.setVolume(newValue / 100);
+        } catch (error) {
+          console.warn('Failed to set volume via SDK, will use local state only:', error);
+        }
+      } else {
+        // When SDK player isn't available, we still update local state
+        // for visual feedback, even though we can't control device volume
+        console.log('Updating volume in UI only (SDK player not available)');
+        
+        // If you have another way to control volume in the future,
+        // you can implement it here
+      }
     } catch (error) {
       console.error('Volume change error:', error);
+      // Don't throw the error, just log it - this keeps the UI working
     }
   };
 
@@ -657,6 +672,9 @@ const MusicPlayer = ({ open, onClose, anchorEl }) => {
                             size="small"
                             value={volume}
                             onChange={handleVolumeChange}
+                            aria-label="Volume"
+                            min={0}
+                            max={100}
                             sx={{
                               ml: 1,
                               color: '#1DB954',
