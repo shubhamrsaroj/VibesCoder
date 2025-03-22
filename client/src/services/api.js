@@ -66,11 +66,4 @@ api.interceptors.response.use(
   }
 );
 
-// Socket.io configuration
-export const getSocketUrl = () => {
-  return process.env.NODE_ENV === 'production'
-    ? 'https://vibescoder.onrender.com'
-    : 'http://localhost:5000';
-};
-
 export default api;
