@@ -1,0 +1,14 @@
+{
+  "name": "vibe-coder",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "start": "cd client && npm start",
+    "build": "cd client && npm install --legacy-peer-deps && npm run build",
+    "server": "cd server && npm start"
+  }
+}
