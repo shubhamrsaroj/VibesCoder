@@ -60,6 +60,8 @@ const MusicPlayer = ({ open, onClose, anchorEl }) => {
   const [deviceId, setDeviceId] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
   const [premiumError, setPremiumError] = useState(false);
+  const [trackProgress, setTrackProgress] = useState(0);
+  const [progressUpdateInterval, setProgressUpdateInterval] = useState(null);
 
   // Listen for SDK Ready Event
   useEffect(() => {
@@ -186,9 +188,14 @@ const MusicPlayer = ({ open, onClose, anchorEl }) => {
       if (track) {
         setCurrentTrack(track);
         setIsPlaying(track?.is_playing || false);
+        // Set track progress if available
+        if (track.progress_ms && track.item?.duration_ms) {
+          setTrackProgress((track.progress_ms / track.item.duration_ms) * 100);
+        }
       } else {
         setCurrentTrack(null);
         setIsPlaying(false);
+        setTrackProgress(0);
       }
     } catch (error) {
       console.error('Error fetching track:', error);
@@ -461,9 +468,6 @@ const MusicPlayer = ({ open, onClose, anchorEl }) => {
         // When SDK player isn't available, we still update local state
         // for visual feedback, even though we can't control device volume
         console.log('Updating volume in UI only (SDK player not available)');
-        
-        // If you have another way to control volume in the future,
-        // you can implement it here
       }
     } catch (error) {
       console.error('Volume change error:', error);
@@ -488,6 +492,119 @@ const MusicPlayer = ({ open, onClose, anchorEl }) => {
   const handleRefreshPlaylists = () => {
     const token = localStorage.getItem('spotify_token');
     if (token) fetchPlaylists(token);
+  };
+
+  // Set up progress update interval when track is playing
+  useEffect(() => {
+    // Clear any existing interval
+    if (progressUpdateInterval) {
+      clearInterval(progressUpdateInterval);
+      setProgressUpdateInterval(null);
+    }
+    
+    // If a track is playing, start progress updates
+    if (isPlaying && currentTrack?.item?.duration_ms) {
+      // Start from current progress
+      let currentProgress = currentTrack.progress_ms || 0;
+      const interval = setInterval(() => {
+        // Increment by 1 second
+        currentProgress += 1000;
+        
+        // Calculate percentage
+        const progressPercent = Math.min(
+          (currentProgress / currentTrack.item.duration_ms) * 100,
+          100
+        );
+        
+        // Update state
+        setTrackProgress(progressPercent);
+        
+        // If we've reached the end of the track, clear interval
+        if (progressPercent >= 100) {
+          clearInterval(interval);
+        }
+      }, 1000);
+      
+      setProgressUpdateInterval(interval);
+      
+      // Cleanup on unmount
+      return () => clearInterval(interval);
+    }
+  }, [isPlaying, currentTrack]);
+
+  // Format time in MM:SS
+  const formatTime = (ms) => {
+    if (!ms) return '0:00';
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+  
+  // Handle progress bar click to seek to position
+  const handleProgressChange = async (event, newValue) => {
+    if (!currentTrack?.item?.duration_ms) return;
+    
+    // Calculate the time in ms based on the percentage clicked
+    const seekPosition = Math.floor((newValue / 100) * currentTrack.item.duration_ms);
+    
+    try {
+      const token = localStorage.getItem('spotify_token');
+      if (!token) return;
+      
+      // If we have SDK player
+      if (player) {
+        try {
+          await player.seek(seekPosition);
+          return;
+        } catch (sdkError) {
+          console.warn('SDK seek failed, will try using API:', sdkError);
+        }
+      }
+      
+      // Otherwise, use the REST API
+      await fetch(`${BACKEND_URL}/api/spotify/seek?position_ms=${seekPosition}`, {
+        method: 'PUT',
+        headers: getHeaders(token)
+      });
+      
+      // Update local progress immediately for better UX
+      setTrackProgress(newValue);
+    } catch (error) {
+      console.error('Error seeking track position:', error);
+    }
+  };
+
+  // Create richer tooltip content for controls
+  const PreviousTooltip = () => {
+    const previousTrackName = currentTrack?.item?.name ? `Previous: ${currentTrack?.item?.name}` : "Previous track";
+    return (
+      <Box sx={{ p: 1 }}>
+        <Typography variant="body2">{previousTrackName}</Typography>
+      </Box>
+    );
+  };
+  
+  const NextTooltip = () => {
+    const nextTrackName = currentTrack?.item?.name ? `Next: ${currentTrack?.item?.name}` : "Next track";
+    return (
+      <Box sx={{ p: 1 }}>
+        <Typography variant="body2">{nextTrackName}</Typography>
+      </Box>
+    );
+  };
+  
+  const PlayPauseTooltip = () => {
+    return (
+      <Box sx={{ p: 1 }}>
+        <Typography variant="body2">{isPlaying ? "Pause" : "Play"}</Typography>
+        {currentTrack?.item?.name && (
+          <Typography variant="caption" sx={{ color: alpha('#fff', 0.7) }}>
+            {currentTrack.item.name}
+          </Typography>
+        )}
+      </Box>
+    );
   };
 
   return (
@@ -622,25 +739,44 @@ const MusicPlayer = ({ open, onClose, anchorEl }) => {
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Tooltip title="Previous">
+                      <Tooltip title={<PreviousTooltip />} arrow placement="top">
                         <IconButton 
                           onClick={handlePrevious}
                           size="small"
-                          sx={{ color: alpha('#fff', 0.7) }}
+                          sx={{ 
+                            color: alpha('#fff', 0.7),
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              color: '#fff',
+                              backgroundColor: alpha('#fff', 0.1),
+                              transform: 'scale(1.1)'
+                            },
+                            '&:active': {
+                              transform: 'scale(0.95)'
+                            }
+                          }}
                         >
                           <SkipPreviousIcon />
                         </IconButton>
                       </Tooltip>
                       
-                      <Tooltip title={isPlaying ? "Pause" : "Play"}>
+                      <Tooltip title={<PlayPauseTooltip />} arrow placement="top">
                         <IconButton 
                           onClick={handlePlayPause}
                           sx={{
                             p: 1,
                             color: 'white',
                             background: 'linear-gradient(90deg, #1DB954, #1aa34a)',
+                            boxShadow: '0 2px 8px rgba(29, 185, 84, 0.3)',
+                            transition: 'all 0.2s ease',
                             '&:hover': {
-                              background: 'linear-gradient(90deg, #1aa34a, #168d40)',
+                              background: 'linear-gradient(90deg, #1ed760, #1db954)',
+                              boxShadow: '0 4px 12px rgba(29, 185, 84, 0.4)',
+                              transform: 'translateY(-2px)'
+                            },
+                            '&:active': {
+                              transform: 'translateY(1px)',
+                              boxShadow: '0 1px 4px rgba(29, 185, 84, 0.3)'
                             }
                           }}
                         >
@@ -648,11 +784,22 @@ const MusicPlayer = ({ open, onClose, anchorEl }) => {
                         </IconButton>
                       </Tooltip>
                       
-                      <Tooltip title="Next">
+                      <Tooltip title={<NextTooltip />} arrow placement="top">
                         <IconButton 
                           onClick={handleNext}
                           size="small"
-                          sx={{ color: alpha('#fff', 0.7) }}
+                          sx={{ 
+                            color: alpha('#fff', 0.7),
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              color: '#fff',
+                              backgroundColor: alpha('#fff', 0.1),
+                              transform: 'scale(1.1)'
+                            },
+                            '&:active': {
+                              transform: 'scale(0.95)'
+                            }
+                          }}
                         >
                           <SkipNextIcon />
                         </IconButton>
@@ -679,19 +826,66 @@ const MusicPlayer = ({ open, onClose, anchorEl }) => {
                               ml: 1,
                               color: '#1DB954',
                               '& .MuiSlider-thumb': {
-                                width: 8,
-                                height: 8,
+                                width: 12,
+                                height: 12,
+                                transition: 'box-shadow 0.2s',
                                 '&:hover, &.Mui-focusVisible': {
                                   boxShadow: '0 0 0 8px rgba(29, 185, 84, 0.16)'
+                                },
+                                '&:active': {
+                                  boxShadow: '0 0 0 12px rgba(29, 185, 84, 0.24)'
                                 }
                               },
                               '& .MuiSlider-rail': {
                                 opacity: 0.3
-                              }
+                              },
+                              '& .MuiSlider-track': {
+                                height: 4,
+                                backgroundImage: 'linear-gradient(to right, #1DB954, #1ed760)'
+                              },
+                              transition: 'all 0.2s ease'
                             }}
                           />
                         </Box>
                       )}
+                    </Box>
+
+                    <Box sx={{ mb: 3 }}>
+                      <Slider
+                        size="small"
+                        value={trackProgress}
+                        onChange={handleProgressChange}
+                        aria-label="Track progress"
+                        sx={{
+                          height: 4,
+                          color: '#1DB954',
+                          '& .MuiSlider-thumb': {
+                            width: 10,
+                            height: 10,
+                            transition: 'width 0.2s, height 0.2s',
+                            '&:hover, &.Mui-focusVisible': {
+                              boxShadow: '0 0 0 8px rgba(29, 185, 84, 0.16)',
+                              width: 12,
+                              height: 12
+                            }
+                          },
+                          '& .MuiSlider-rail': {
+                            opacity: 0.3,
+                            backgroundColor: alpha('#fff', 0.3)
+                          },
+                          '& .MuiSlider-track': {
+                            backgroundImage: 'linear-gradient(to right, #1DB954, #1ed760)'
+                          }
+                        }}
+                      />
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                        <Typography variant="caption" sx={{ color: alpha('#fff', 0.7) }}>
+                          {formatTime(currentTrack?.progress_ms)}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: alpha('#fff', 0.7) }}>
+                          {formatTime(currentTrack?.item?.duration_ms)}
+                        </Typography>
+                      </Box>
                     </Box>
                   </Box>
                 ) : (
