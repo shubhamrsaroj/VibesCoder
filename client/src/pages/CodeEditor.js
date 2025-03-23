@@ -55,6 +55,8 @@ import SendIcon from '@mui/icons-material/Send';
 import CircularProgress from '@mui/material/CircularProgress';
 import Editor from '@monaco-editor/react';
 import { useParams, useNavigate } from 'react-router-dom';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 // Import service and component files
 import { saveCodeFile, updateCodeFile, createProject, getProjectFiles } from '../services/projectService';
@@ -575,6 +577,22 @@ const CodeEditor = () => {
           </Typography>
         )}
       </Box>
+      <Tooltip title="Download file">
+        <IconButton 
+          size="small" 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDownloadFile(file);
+          }}
+          sx={{ 
+            ml: 1, 
+            color: alpha('#fff', 0.6),
+            '&:hover': { color: theme.palette.primary.main }
+          }}
+        >
+          <DownloadIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
     </Box>
   );
 
@@ -835,11 +853,40 @@ const CodeEditor = () => {
   };
   
   // Export project as zip file
-  const handleExportProject = () => {
-    // We would normally use JSZip here, but since we're in a sandbox,
-    // we'll just show a message about the feature
-    setConsoleOutput(prev => [...prev, 'info: Export project feature would download all files as a zip.']);
-    alert('In a full implementation, this would download all project files as a zip archive.');
+  const handleExportProject = async () => {
+    try {
+      setConsoleOutput(prev => [...prev, 'info: Creating zip archive...']);
+      
+      const zip = new JSZip();
+      const allFiles = getAllFilesFlat(files);
+      
+      // Add each file to the zip
+      allFiles.forEach(file => {
+        // Extract path information
+        const filePath = file.id.includes('/') 
+          ? file.id 
+          : file.name;
+        
+        // Add file to zip at the correct path
+        zip.file(filePath, file.value);
+      });
+      
+      // Generate the zip file
+      const content = await zip.generateAsync({ type: 'blob' });
+      
+      // Use a default name or the project name if available
+      const zipName = (projectId && newProjectName) 
+        ? `${newProjectName}.zip` 
+        : 'netcode-project.zip';
+      
+      // Save the zip file
+      saveAs(content, zipName);
+      
+      setConsoleOutput(prev => [...prev, 'success: Project exported successfully!']);
+    } catch (error) {
+      console.error('Error exporting project:', error);
+      setConsoleOutput(prev => [...prev, `error: Export failed: ${error.message}`]);
+    }
   };
   
   // Update the message handler to show file information in console
@@ -1146,6 +1193,19 @@ const CodeEditor = () => {
                     }}
                   >
                     <BrushIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton 
+                    size="small" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownloadFile(item);
+                    }}
+                    sx={{ 
+                      color: alpha('#fff', 0.6),
+                      '&:hover': { color: theme.palette.primary.main }
+                    }}
+                  >
+                    <DownloadIcon fontSize="small" />
                   </IconButton>
                   <IconButton 
                     size="small" 
@@ -1772,6 +1832,34 @@ const CodeEditor = () => {
     }
   };
 
+  // Add function to download a single file
+  const handleDownloadFile = (file) => {
+    try {
+      // Create a blob from the file content
+      const blob = new Blob([file.value], { type: 'text/plain;charset=utf-8' });
+      
+      // Download the file
+      saveAs(blob, file.name);
+      
+      setConsoleOutput(prev => [...prev, `info: Downloaded ${file.name}`]);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      setConsoleOutput(prev => [...prev, `error: Download failed: ${error.message}`]);
+    }
+  };
+
+  // Add function to copy code to clipboard
+  const handleCopyCode = (code) => {
+    navigator.clipboard.writeText(code)
+      .then(() => {
+        setConsoleOutput(prev => [...prev, 'info: Code copied to clipboard']);
+      })
+      .catch(err => {
+        console.error('Failed to copy code:', err);
+        setConsoleOutput(prev => [...prev, 'error: Failed to copy code to clipboard']);
+      });
+  };
+
   // Update the return statement's relevant parts
   return (
     <EditorContainer>
@@ -1833,6 +1921,23 @@ const CodeEditor = () => {
             }}
           >
             Save
+          </Button>
+          
+          <Button
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            onClick={handleExportProject}
+            sx={{ 
+              mr: 1,
+              borderColor: alpha('#fff', 0.3),
+              color: alpha('#fff', 0.9),
+              '&:hover': {
+                borderColor: alpha('#fff', 0.5),
+                backgroundColor: alpha('#fff', 0.05)
+              }
+            }}
+          >
+            Export
           </Button>
           
           <SaveToProjectButton
@@ -2183,22 +2288,40 @@ const CodeEditor = () => {
                                 {lang || 'code'}
                               </Typography>
                             </Box>
-                            <Button
-                              size="small"
-                              startIcon={<ContentPasteIcon />}
-                              onClick={() => handleInsertCode(code.join('\n'))}
-                              sx={{ 
-                                color: theme.palette.primary.main,
-                                borderColor: alpha(theme.palette.primary.main, 0.5),
-                                '&:hover': {
-                                  borderColor: theme.palette.primary.main,
-                                  backgroundColor: alpha(theme.palette.primary.main, 0.1)
-                                }
-                              }}
-                              variant="outlined"
-                            >
-                              Insert Code
-                            </Button>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <Button
+                                size="small"
+                                startIcon={<ContentPasteIcon />}
+                                onClick={() => handleCopyCode(code.join('\n'))}
+                                sx={{ 
+                                  color: alpha('#fff', 0.9),
+                                  borderColor: alpha('#fff', 0.3),
+                                  '&:hover': {
+                                    borderColor: alpha('#fff', 0.5),
+                                    backgroundColor: alpha('#fff', 0.05)
+                                  }
+                                }}
+                                variant="outlined"
+                              >
+                                Copy
+                              </Button>
+                              <Button
+                                size="small"
+                                startIcon={<ContentPasteIcon />}
+                                onClick={() => handleInsertCode(code.join('\n'))}
+                                sx={{ 
+                                  color: theme.palette.primary.main,
+                                  borderColor: alpha(theme.palette.primary.main, 0.5),
+                                  '&:hover': {
+                                    borderColor: theme.palette.primary.main,
+                                    backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                                  }
+                                }}
+                                variant="outlined"
+                              >
+                                Insert Code
+                              </Button>
+                            </Box>
                           </Box>
                           <pre>
                             <code>{code.join('\n')}</code>
